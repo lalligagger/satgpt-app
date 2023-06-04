@@ -19,7 +19,7 @@ bmap = basemap_to_tiles(basemaps.OpenStreetMap.Mapnik)
 
 class MapManager(param.Parameterized):
 
-    itempath = param.String("./items.json")
+    itempath = param.String("./tmp/items.json")
     date = param.Date()
     data = param.ClassSelector(Dataset, precedence=-1)
     items = param.ListSelector()
@@ -37,12 +37,21 @@ class MapManager(param.Parameterized):
             items = pystac.ItemCollection(query)
 
         self.items = items.items
-        self.allow_dates = [i.datetime.date() for i in self.items] #not used yet
+        self.allow_dates = [i.datetime.date() for i in self.items]
+
+        # want this to fire a date set, but set_date expects an event.
+        # self.set_date(self.allow_dates[0])
+        # pn.state.location.reload = True # https://github.com/holoviz/panel/issues/3148
 
     # main update function on calendar date set
     def set_date(self, event):
-        print(f"setting new date {event.new}")
-        self.date = event.new
+        try:
+            print(f"setting new date {event.new}")
+            self.date = event.new
+        except:
+            # HACK: accepts a datetime; clean this up
+            self.date = event
+        
         self.update_layer()
         return self.date
 
@@ -62,16 +71,17 @@ class MapManager(param.Parameterized):
 
         ## needs to force reload to view new image layer
         try:
+            "reloading map"
             pn.state.location.reload = True # https://github.com/holoviz/panel/issues/3148
         except:
-            "skipping reload"
-        ## for debug only
+            ## for debug only, if panel is not running just return the map
+            "skipping map reload"
         return self._map 
         
     # data loader
     # TODO: allow daterange
     def load_data(self, date):
-        self.load_items()
+        # self.load_items()
 
         print("loading data")
         print(self.items)
@@ -89,24 +99,33 @@ class MapManager(param.Parameterized):
         self.data = xx
         return self.data
     
-    ## not used
-    # def panel(self):
-        
-    #     map_params = pn.Param(    
+    @pn.depends('allow_dates')#, watch=True)
+    def panel(self):
 
-    #         parameters=["itempath", "date"],
-            
-    #         widgets={
-    #             "date": {
-    #                 "type": pn.widgets.DatePicker(
-    #                     start=self.allow_dates[-1], 
-    #                     end=self.allow_dates[0], 
-    #                     enabled_dates=self.allow_dates
-    #                     )
-    #                 }, 
-    #         },
-    #         show_name=False,
-    #         default_layout=pn.Row,
-    #         width=600
-    #     )
-    #     return pn.Column(pn.panel(map_params), pn.panel(self._map))
+        if self.allow_dates is not None:
+            dp_widget = pn.widgets.DatePicker(
+                            start=self.allow_dates[-1], 
+                            end=self.allow_dates[0], 
+                            enabled_dates=self.allow_dates
+                        )
+        else:
+            dp_widget = pn.widgets.DatePicker()
+
+        # watches the datepicker widget and updates the manager's date
+        # an event is sent to set_date, event.new is the datetime
+        watcher = dp_widget.param.watch(self.set_date, ['value'])
+
+        # map_params = pn.Param(    
+
+        #     parameters=["date"],
+        #     widgets={
+        #         "date": {
+        #             "type": dp_widget
+        #             }, 
+        #         },
+        #     show_name=False,
+        #     default_layout=pn.Row,
+        #     width=600
+        # )
+        
+        return pn.Column(dp_widget, pn.panel(self._map))

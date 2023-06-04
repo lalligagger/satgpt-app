@@ -11,45 +11,179 @@ import panel as pn
 import pystac
 from pystac_client.client import Client
 
+import panel as pn
+from langchain.callbacks.base import BaseCallbackHandler
+
+from langchain.callbacks.manager import (
+    AsyncCallbackManagerForToolRun,
+    CallbackManagerForToolRun,
+)
+from langchain.chat_models import ChatOpenAI
+
+from langchain import OpenAI
+from langchain.tools import BaseTool, StructuredTool
+from langchain.agents import initialize_agent, AgentType
+from typing import Tuple, Optional
+
+from langchain_tools import StacSearchTool
+import param
+import pandas as pd
+import time
+
+pn.extension("terminal", sizing_mode="stretch_width", design="bootstrap")
+text = pn.widgets.TextAreaInput(value="Hello, how are you?", name="Text")
+
+StacSearchTool.name = "stacsearch"
+StacSearchTool.description =  """
+    query the STAC API, using pystac-client, once the bounding box and date range are known
+    given bounding box 'bbox', (tuple), and optionally:
+    - date range: 'dtime' (str)
+    - api catalog: 'url', (str)
+    - stac query (e.g. ["eo:cloud_cover<30", ...]): 'q', (list)
+"""
+
+class ChatStreamCallbackHandler(BaseCallbackHandler):
+    """A basic Call Back Handler that will update the token on the chat widget provided"""
+
+    def __init__(self, chat: "ChatWidget"):
+        self.chat = chat
+
+    def on_llm_new_token(self, token: str, **kwargs) -> None:
+        self.chat.token = token
+
+class ChatWidget(pn.viewable.Viewer):
+    text: str = param.String(
+        default="Sentinel images over Seattle, WA 2022",
+        doc="""The text to submit to the chat api""",
+    )
+    submit: bool = param.Event(label="SUBMIT")
+
+    token: str = param.String(doc="""The single token streamed from the chat api""")
+    value: str = param.String()
+
+    is_predicting: bool = param.Boolean(
+        default=False, doc="""True while the chat is predicting"""
+    )
+
+    max_tokens = param.Integer(
+        default=1500,
+        bounds=(1, 2000),
+        doc="""The maximum number of tokens returned by the chat api""",
+    )
+    streaming = param.Boolean(
+        default=True, doc="""Whether or not to stream the tokens"""
+    )
+
+    def __init__(self, **params):
+        super().__init__(**params)
+        self._create_panel()
+        self._create_chat()
+
+    def __panel__(self):
+        return self._panel
+
+    def _create_panel(self):
+        self._terminal = pn.widgets.Terminal(height=250)
+        pn.bind(self._terminal.write, self.param.token, watch=True)
+
+        self._submit_button = pn.widgets.Button.from_param(
+            self.param.submit, button_type="primary", icon="robot"
+        )
+        self._text_input = pn.widgets.TextAreaInput.from_param(self.param.text)
+        self._show_settings = pn.widgets.Checkbox(value=False, name="Show settings?")
+        self._settings = pn.Column(
+            self.param.max_tokens,
+            visible=self._show_settings,
+        )
+        self._panel = pn.Column(
+            # "### Input",
+            # self._show_settings,
+            # self._settings,ß
+            self._text_input,
+            self._submit_button,
+            # "### Output",
+            self._terminal,
+        )
+
+    @pn.depends("max_tokens", "streaming", watch=True)
+    def _create_chat(self):
+        stream_handler = ChatStreamCallbackHandler(chat=self)
+        llm = OpenAI(
+            temperature=0,
+            max_tokens=self.max_tokens,
+            streaming=self.streaming,
+            callbacks=[stream_handler],
+        )
+
+        # Structured tools are compatible with the STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION agent type. 
+        self._chat = initialize_agent(
+            tools=[StacSearchTool()], 
+            llm=llm, 
+            agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION, 
+            streaming=True,
+            verbose=True,
+            # memory = conversational_memory
+            )
+
+    @pn.depends("is_predicting", watch=True)
+    def _handle_predicting(self):
+        self.param.submit.constant = self.is_predicting
+
+    @pn.depends("submit", watch=True)
+    async def apredict(self):
+        self.is_predicting = True
+
+        self.value = self._chat.run(self.text)
+
+        ## TODO: Get full async runs working. Right now get error about bbox args being passed to _run
+        # File "/home/codespace/.local/lib/python3.10/site-packages/langchain/tools/base.py", line 330, in arun
+        #     await self._arun(*tool_args, run_manager=run_manager, **tool_kwargs)
+        # File "/workspaces/satgpt-app/langchain_tools.py", line 76, in _arun
+        #     self._run(
+        # TypeError: StacSearchTool._run() got multiple values for argument 'bbox'
+        
+        # self.value = await self._chat.arun(self.text)
+
+        self.is_predicting = False
+
+        if self._terminal:
+            self._terminal.writelines(lines=["\n\n", "-", "\n\n"])
+
+
+token_map = {}
+chat = ChatWidget()
+
+@pn.depends(token=chat.param.token)
+def get_plot(token: str, token_map=token_map):
+    stripped_token = token.strip()
+    if len(stripped_token) > 2:
+        token_map[stripped_token] = token_map.get(stripped_token, 0) + 1
+    if not token_map:
+        return "No data"
+    data = (
+        pd.Series(data=token_map.values(), index=token_map.keys())
+        .T.sort_values(ascending=False)
+        .head(10)
+    )
+    return "success!"
 
 # default user request
 user_req = 'Sentinel images available over Seattle on August 26 2019'
-
 map_mgr = MapManager()
-
-# TODO: if dates are set here, then there must be a search to load on init.
-# how can we handle this?
-dp_widget = pn.widgets.DatePicker(
-    ## pulled out for now
-    # start=map_mgr.allow_dates[-1],
-    # end=map_mgr.allow_dates[0],
-    # enabled_dates=map_mgr.allow_dates
-    
-    )
-
-datepicker = pn.Param(map_mgr, widgets={"date":dp_widget})
-button = pn.widgets.Button(name='Search', button_type='primary')
-text = pn.widgets.TextInput(value=user_req, sizing_mode="stretch_width")
-json_widget = pn.pane.JSON({}, height=75)
+button2 = pn.widgets.Button(name='Update Items to Map', button_type='warning')
 pn.extension("ipywidgets", sizing_mode="stretch_width")
+
 ACCENT_BASE_COLOR = "#DAA520"
 
-# TODO: have not found any way, yet, to get views of a new stac search
-@pn.depends(button, watch=True)
-def update_data(clicks):
-    # run the agent using text field input
-    agent_executor(text.value)
-
-# handles date setting, sends to map_mgr for data load & layer update
-watcher = dp_widget.param.watch(map_mgr.set_date, ['value'])
+@pn.depends(button2, watch=True)
+def update_items(clicks):
+    map_mgr.load_items()
 
 component = pn.Column(
-    pn.Row(text, button),
-    # pn.Row(datepicker),
-    datepicker,
-    map_mgr._map
-    # map_mgr.view,
-    # json_widget  # will add agent stream/ debug here
+    chat,
+    button2,
+    get_plot,
+    map_mgr.panel,
 )
 
 template = pn.template.FastListTemplate(
