@@ -1,0 +1,6 @@
+runtime: python
+env: flex
+entrypoint: panel serve app.py --address 0.0.0.0 --port 8080 --allow-websocket-origin="*"
+
+runtime_config:
+  python_version: 3.7
