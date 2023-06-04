@@ -1,5 +1,5 @@
 from langchain import OpenAI
-from langchain.agents import initialize_agent#, AgentType
+from langchain.agents import initialize_agent, AgentType
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain.tools import StructuredTool
 from typing import Tuple, Optional
