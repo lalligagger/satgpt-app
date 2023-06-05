@@ -1,5 +1,5 @@
 # Import things that are needed generically
-from langchain import LLMMathChain, SerpAPIWrapper
+# from langchain import LLMMathChain, SerpAPIWrapper
 from langchain.agents import AgentType, initialize_agent
 from langchain.chat_models import ChatOpenAI
 from langchain.tools import BaseTool, StructuredTool, Tool, tool
@@ -28,11 +28,11 @@ class StacSearchTool(BaseTool):
     query the STAC API, using pystac-client, given:
     - bbox (str), e.g. '-122.3, 47.6, -122.2, 47.7'
     - dtime (str)
-    - savepath (str), e.g. './tmp/items.json'
     """
     # - url (str)
     # - bbox (tuple), e.g. (-122.3, 47.6, -122.2, 47.7)
     # - q (list), e.g. ["eo:cloud_cover<30", ...]: 
+    # - savepath (str), e.g. './tmp/items.json'
 
     def _run(self,  
             # bbox: Tuple[float, float, float, float],
@@ -62,22 +62,24 @@ class StacSearchTool(BaseTool):
     
     async def _arun(
         self, 
-        # bbox: Tuple[float, float, float, float],
         bbox: str,
         dtime: Optional[str],
         savepath: Optional[str] = './tmp/items.json', 
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None
         ) -> str:
         """Use the tool asynchronously."""
+        # bbox: Tuple[float, float, float, float],
         # raise NotImplementedError("custom_search does not support async")
-        bbox_str = str(bbox)
-        print(bbox_str)
-        asyncio.run(
+        # bbox_str = str(bbox)
+
+        print(bbox)
+        return asyncio.run(
             self._run(
                 self, 
-                bbox = bbox_str, 
-                dtime = dtime, 
-                # savepath, 
+                # savepath = savepath,
+                bbox, 
+                dtime, 
+                savepath, 
                 # run_manager
                 )
             )

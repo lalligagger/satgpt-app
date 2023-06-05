@@ -120,7 +120,7 @@ class ChatWidget(pn.viewable.Viewer):
             tools=[StacSearchTool()], 
             llm=llm, 
             agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION, 
-            streaming=True,
+            streaming=False,
             verbose=True,
             # memory = conversational_memory
             )

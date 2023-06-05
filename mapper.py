@@ -27,7 +27,7 @@ class MapManager(param.Parameterized):
     _map = Map(center=(47.4, -122.2), zoom=6, scroll_wheel_zoom=True)
 
     # fires anytime agent completes search & update items.json
-    @pn.depends('itempath', watch=True)
+    # @pn.depends('itempath', watch=True)
     def load_items(self):
         print(f"loading items: {self.itempath}")
 
@@ -37,10 +37,13 @@ class MapManager(param.Parameterized):
             items = pystac.ItemCollection(query)
 
         self.items = items.items
-        self.allow_dates = [i.datetime.date() for i in self.items]
 
+        self.allow_dates = [i.datetime.date() for i in self.items]
         # want this to fire a date set, but set_date expects an event.
-        # self.set_date(self.allow_dates[0])
+        # self.allow_dates = allow_dates
+        list(self.panel())[0].enabled_dates = self.allow_dates
+        # self.set_date(allow_dates[0])
+        self.panel()
         # pn.state.location.reload = True # https://github.com/holoviz/panel/issues/3148
 
     # main update function on calendar date set
@@ -71,11 +74,13 @@ class MapManager(param.Parameterized):
 
         ## needs to force reload to view new image layer
         try:
-            "reloading map"
+            print("reloading map")
             pn.state.location.reload = True # https://github.com/holoviz/panel/issues/3148
+            # list(self.panel())[0].enabled_dates = self.allow_dates
+
         except:
             ## for debug only, if panel is not running just return the map
-            "skipping map reload"
+            print("skipping map reload")
         return self._map 
         
     # data loader
@@ -83,7 +88,7 @@ class MapManager(param.Parameterized):
     def load_data(self, date):
         # self.load_items()
 
-        print("loading data")
+        print("loading data for items:")
         print(self.items)
         items = self.items
 
