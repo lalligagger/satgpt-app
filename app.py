@@ -1,4 +1,4 @@
-from agent import agent_executor
+# from agent import agent_executor
 from mapper import MapManager
 
 from ipyleaflet import Map, Marker
