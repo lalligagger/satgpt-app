@@ -38,7 +38,7 @@ class StacSearchTool(BaseTool):
             # bbox: Tuple[float, float, float, float],
             bbox: str,
             dtime: Optional[str],
-            savepath: Optional[str] = './tmp/items.json',
+            savepath: Optional[str] = '/workspaces/satgpt-app/tmp/items.json',
             run_manager: Optional[CallbackManagerForToolRun] = None
             ) -> str:
         """Use the tool."""
@@ -55,7 +55,7 @@ class StacSearchTool(BaseTool):
 
         items_dict = query.get_all_items_as_dict()
 
-        with open('./tmp/items.json', 'w') as f:
+        with open('/workspaces/satgpt-app/tmp/items.json', 'w') as f:
             f.write(json.dumps(items_dict, indent=2))
         
         return f"{query.matched()} items were found & saved to {savepath}"  
@@ -64,7 +64,7 @@ class StacSearchTool(BaseTool):
         self, 
         bbox: str,
         dtime: Optional[str],
-        savepath: Optional[str] = './tmp/items.json', 
+        savepath: Optional[str] = '/workspaces/satgpt-app/tmp/items.json', 
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None
         ) -> str:
         """Use the tool asynchronously."""
