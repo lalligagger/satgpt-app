@@ -99,7 +99,7 @@ class MapManager(param.Parameterized):
         xx = stac_load(
             item,
             bands=["red", "green", "blue"],
-            resolution=1000
+            resolution=100
             )
         self.data = xx
         return self.data

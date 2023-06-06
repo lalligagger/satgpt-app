@@ -1,5 +1,6 @@
 # from agent import agent_executor
 from mapper import MapManager
+from tools import StacSearchTool
 
 from ipyleaflet import Map, Marker
 import json
@@ -25,13 +26,14 @@ from langchain.tools import BaseTool, StructuredTool
 from langchain.agents import initialize_agent, AgentType
 from typing import Tuple, Optional
 
-from langchain_tools import StacSearchTool
 import param
 import pandas as pd
 import time
 
 pn.extension("terminal", sizing_mode="stretch_width", design="bootstrap")
-text = pn.widgets.TextAreaInput(value="Hello, how are you?", name="Text")
+
+# default user request
+user_req = 'Sentinel images available over Seattle in August 2022'
 
 StacSearchTool.name = "stacsearch"
 StacSearchTool.description =  """
@@ -53,7 +55,7 @@ class ChatStreamCallbackHandler(BaseCallbackHandler):
 
 class ChatWidget(pn.viewable.Viewer):
     text: str = param.String(
-        default="Sentinel images over Seattle, WA 2022",
+        default=user_req,
         doc="""The text to submit to the chat api""",
     )
     submit: bool = param.Event(label="SUBMIT")
@@ -90,11 +92,14 @@ class ChatWidget(pn.viewable.Viewer):
             self.param.submit, button_type="primary", icon="robot"
         )
         self._text_input = pn.widgets.TextAreaInput.from_param(self.param.text)
-        self._show_settings = pn.widgets.Checkbox(value=False, name="Show settings?")
-        self._settings = pn.Column(
-            self.param.max_tokens,
-            visible=self._show_settings,
-        )
+        
+        ## TODO: could use for e.g. opacity, display resolution
+        # self._show_settings = pn.widgets.Checkbox(value=False, name="Show settings?")
+        # self._settings = pn.Column(
+        #     self.param.max_tokens,
+        #     visible=self._show_settings,
+        # )
+        
         self._panel = pn.Column(
             # "### Input",
             # self._show_settings,
@@ -102,7 +107,7 @@ class ChatWidget(pn.viewable.Viewer):
             self._text_input,
             self._submit_button,
             # "### Output",
-            self._terminal,
+            pn.Accordion(('<span style="color:red; font-size:.5em;">Debug</span>', self._terminal), doc="Expand for LangChain agent debug")
         )
 
     @pn.depends("max_tokens", "streaming", watch=True)
@@ -153,36 +158,19 @@ class ChatWidget(pn.viewable.Viewer):
 token_map = {}
 chat = ChatWidget()
 
-@pn.depends(token=chat.param.token)
-def get_plot(token: str, token_map=token_map):
-    stripped_token = token.strip()
-    if len(stripped_token) > 2:
-        token_map[stripped_token] = token_map.get(stripped_token, 0) + 1
-    if not token_map:
-        return "No data"
-    data = (
-        pd.Series(data=token_map.values(), index=token_map.keys())
-        .T.sort_values(ascending=False)
-        .head(10)
-    )
-    return "success!"
-
-# default user request
-user_req = 'Sentinel images available over Seattle on August 26 2019'
 map_mgr = MapManager()
-button2 = pn.widgets.Button(name='Update Items to Map', button_type='warning')
+button = pn.widgets.Button(name='Update Items to Map', button_type='warning')
 pn.extension("ipywidgets", sizing_mode="stretch_width")
 
 ACCENT_BASE_COLOR = "#DAA520"
 
-@pn.depends(button2, watch=True)
+@pn.depends(button, watch=True)
 def update_items(clicks):
     map_mgr.load_items()
 
 component = pn.Column(
     chat,
-    button2,
-    get_plot,
+    button,
     map_mgr.panel,
 )
 
