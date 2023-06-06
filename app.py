@@ -107,7 +107,7 @@ class ChatWidget(pn.viewable.Viewer):
             self._text_input,
             self._submit_button,
             # "### Output",
-            pn.Accordion(('<span style="color:red; font-size:.5em;">Debug</span>', self._terminal), doc="Expand for LangChain agent debug")
+            pn.Accordion(('<span style="color:red; font-size:.5em;">Debug</span>', self._terminal))
         )
 
     @pn.depends("max_tokens", "streaming", watch=True)
