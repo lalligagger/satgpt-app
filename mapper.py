@@ -39,12 +39,8 @@ class MapManager(param.Parameterized):
         self.items = items.items
 
         self.allow_dates = [i.datetime.date() for i in self.items]
-        # want this to fire a date set, but set_date expects an event.
-        # self.allow_dates = allow_dates
         list(self.panel())[0].enabled_dates = self.allow_dates
-        # self.set_date(allow_dates[0])
-        self.panel()
-        # pn.state.location.reload = True # https://github.com/holoviz/panel/issues/3148
+        self.panel() # does this do anything? (TODO)
 
     # main update function on calendar date set
     def set_date(self, event):
@@ -72,6 +68,8 @@ class MapManager(param.Parameterized):
         ovr = ui.mk_image_overlay(rgba.sel(time=self.date, method='nearest'))
         self._map.add_layer(ovr)
 
+        # self._map.save('./map.html') # works, but iframes won't reload
+
         ## needs to force reload to view new image layer
         try:
             print("reloading map")
@@ -81,6 +79,11 @@ class MapManager(param.Parameterized):
         except:
             ## for debug only, if panel is not running just return the map
             print("skipping map reload")
+
+        ## this doesn't work, so we lose allowed dates on reload. why?? (TODO)
+        # finally:
+        #     list(self.panel())[0].enabled_dates = self.allow_dates
+
         return self._map 
         
     # data loader
@@ -99,7 +102,7 @@ class MapManager(param.Parameterized):
         xx = stac_load(
             item,
             bands=["red", "green", "blue"],
-            resolution=100
+            resolution=1000
             )
         self.data = xx
         return self.data

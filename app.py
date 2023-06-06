@@ -154,12 +154,14 @@ class ChatWidget(pn.viewable.Viewer):
         if self._terminal:
             self._terminal.writelines(lines=["\n\n", "-", "\n\n"])
 
+        map_mgr.load_items()
+
 
 token_map = {}
 chat = ChatWidget()
 
 map_mgr = MapManager()
-button = pn.widgets.Button(name='Update Items to Map', button_type='warning')
+button = pn.widgets.Button(name='Reload Items to Map', button_type='warning')
 pn.extension("ipywidgets", sizing_mode="stretch_width")
 
 ACCENT_BASE_COLOR = "#DAA520"
