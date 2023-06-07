@@ -39,8 +39,10 @@ class MapManager(param.Parameterized):
         self.items = items.items
 
         self.allow_dates = [i.datetime.date() for i in self.items]
+
+        # does this do anything? (TODO)
         list(self.panel())[0].enabled_dates = self.allow_dates
-        self.panel() # does this do anything? (TODO)
+        self.panel() 
 
     # main update function on calendar date set
     def set_date(self, event):
@@ -82,7 +84,7 @@ class MapManager(param.Parameterized):
 
         ## this doesn't work, so we lose allowed dates on reload. why?? (TODO)
         # finally:
-        #     list(self.panel())[0].enabled_dates = self.allow_dates
+        #     self.load_items()
 
         return self._map 
         
@@ -112,10 +114,10 @@ class MapManager(param.Parameterized):
 
         if self.allow_dates is not None:
             dp_widget = pn.widgets.DatePicker(
-                            start=self.allow_dates[-1], 
-                            end=self.allow_dates[0], 
-                            enabled_dates=self.allow_dates
-                        )
+                start=self.allow_dates[-1], 
+                end=self.allow_dates[0], 
+                enabled_dates=self.allow_dates
+                )
         else:
             dp_widget = pn.widgets.DatePicker()
 
