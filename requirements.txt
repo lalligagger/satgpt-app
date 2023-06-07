@@ -12,6 +12,7 @@ psycopg2-binary
 rasterio
 # stackstac
 odc-stac
+odc-ui
 botocore
 odc-algo
 psycopg2
