@@ -36,4 +36,4 @@ Note: you only need to set this up once. All GitHub accounts now come with 60 CP
 
 SatGPT was [originally](https://github.com/lalligagger/satgpt) built on the OpenAI API without LangChain tools/ agents, using a single prompt and one or two custom CLI tools. It used [ShellGPT](https://github.com/TheR1D/shell_gpt) for automatic execution in a shell REPL and could generate STAC item searches as well as save TIFs or GIFs of the search.
 
-In the future, we would like to re-integrate all of that functionality into a future version of SatGPT built on LangChain and a library of tools specific to satellite image analysis and mission engineering. It'd also be nice to run on LLMs that don't rely sending data to external APIs, which will also be possible with LangChain.
+In the future, we would like to re-integrate all of that functionality into a future version of SatGPT built on LangChain and a library of tools specific to satellite image analysis and mission engineering. It'd also be nice to run on LLMs that don't rely sending data to external APIs, which will be possible with LangChain.
