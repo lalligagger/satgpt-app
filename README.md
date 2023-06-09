@@ -2,6 +2,8 @@
 
 This is a demo web app for `SatGPT`, an experimental project that uses large language models (LLMs) to retrieve and generate satellite data.
 
+https://github.com/lalligagger/satgpt-app/assets/11700267/8675bdc5-ca40-418e-98ce-724ec06ad05a
+
 So far, the app can help retrieve Sentinel 2 optical imagery based on the user's requested area and time of interest in natural language. It is built on the following:
 
 * [OpenAI ChatGPT API](https://openai.com/blog/openai-api) - You've probably tried the chat bot... if you haven't played with the API, you should!
