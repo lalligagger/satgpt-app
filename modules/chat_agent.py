@@ -2,12 +2,9 @@
 # from mapper import MapManager
 from modules.tools import StacSearchTool
 
-from ipyleaflet import Map, Marker
 import json
-from odc import ui
 from odc.stac import stac_load
-from odc import ui
-from odc.algo import colorize, to_rgba
+# from odc.algo import colorize, to_rgba
 import panel as pn
 import pystac
 from pystac_client.client import Client
@@ -167,8 +164,6 @@ chat = ChatWidget()
 
 # map_mgr = MapManager()
 button = pn.widgets.Button(name='Reload Items to Map', button_type='warning')
-pn.extension("ipywidgets", sizing_mode="stretch_width")
-
 ACCENT_BASE_COLOR = "#DAA520"
 
 # @pn.depends(button, watch=True)

@@ -59,16 +59,16 @@ def plot_true_color_image(items, time, mask_clouds, resolution):
     mask = [i.datetime.date() == time for i in items]
     items = [b for a, b in zip(mask, items) if a]
 
-    aws_session = AWSSession(requester_pays=True)
-    with rio.Env(aws_session):
-        print("loading delayed data")
-        s2_data = stac_load(
-            items,
-            bands=["red", "green", "blue"],#, "nir", "nir08", "swir16", "swir22"],
-            resolution=resolution,
-            chunks={'time':1, 'x': 2048, 'y': 2048},
-            # crs='EPSG:4326',
-            ).to_stacked_array(new_dim='band', sample_dims=('time', 'x', 'y'))
+    # aws_session = AWSSession(requester_pays=True)
+    # with rio.Env(aws_session):
+    print("loading delayed data")
+    s2_data = stac_load(
+        items,
+        bands=["red", "green", "blue"],#, "nir", "nir08", "swir16", "swir22"],
+        resolution=resolution,
+        chunks={'time':1, 'x': 2048, 'y': 2048},
+        # crs='EPSG:4326',
+        ).to_stacked_array(new_dim='band', sample_dims=('time', 'x', 'y'))
     
     s2_data = s2_data.astype("int16")
     # Get the selected image and band combination
@@ -185,16 +185,16 @@ def plot_s2_spindex(items, time, s2_spindex, mask_clouds, resolution):
     mask = [i.datetime.date() == time for i in items]
     items = [b for a, b in zip(mask, items) if a]
 
-    aws_session = AWSSession(requester_pays=True)
-    with rio.Env(aws_session):
-        print("loading delayed data")
-        s2_data = stac_load(
-            items,
-            bands=[b[0] for b in load_bands],
-            resolution=resolution,
-            chunks={'time':1, 'x': 2048, 'y': 2048},
-            # crs='EPSG:4326',
-            ).to_stacked_array(new_dim='band', sample_dims=('time', 'x', 'y'))
+    # aws_session = AWSSession(requester_pays=True)
+    # with rio.Env(aws_session):
+    print("loading delayed data")
+    s2_data = stac_load(
+        items,
+        bands=[b[0] for b in load_bands],
+        resolution=resolution,
+        chunks={'time':1, 'x': 2048, 'y': 2048},
+        # crs='EPSG:4326',
+        ).to_stacked_array(new_dim='band', sample_dims=('time', 'x', 'y'))
     s2_data = s2_data.astype("int16")
 
     # Get the selected image and band combination
