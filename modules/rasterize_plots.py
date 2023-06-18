@@ -31,15 +31,15 @@ def s2_contrast_stretch(in_data):
     Image enhancement: Contrast stretching.
     """
 
-    p2, p98 = np.percentile(in_data.ravel(), (2.5, 97.5))
-    out_data.values = exposure.rescale_intensity(in_data, in_range=(p2, p98))
+    p2, p98 = np.percentile(in_data.values.ravel(), (2.5, 97.5))
     print(f"scaling to range {p2} : {p98}")
+    in_data.values = exposure.rescale_intensity(in_data, in_range=(p2, p98))
 
     # out_data = exposure.rescale_intensity(in_data, in_range=(0, 75))
 
-    return out_data
+    return in_data
 
-def s2_hv_plot(items, bbox, type="RGB"):
+def s2_hv_plot(items, bbox, time, type="RGB"):
     TILES = hv.element.tiles.OSM()
 
     response = urlopen(
@@ -49,10 +49,14 @@ def s2_hv_plot(items, bbox, type="RGB"):
     # query = payload["features"]
     # items = pystac.ItemCollection(query)
 
-    sel_item = list(items)[0]
+    # sel_item = list(items)[0]
+
+    mask = [i.datetime.date() == time for i in items]
+    items = [b for a, b in zip(mask, items) if a]
 
     s2_data = stac_load(
-        [sel_item],
+        # [sel_item],
+        items,
         bbox=bbox,
         # lon = (bbox[0], bbox[2]),
         # lat = (bbox[1], bbox[3]),
@@ -72,7 +76,7 @@ def s2_hv_plot(items, bbox, type="RGB"):
         rgb_data = s2_image_to_uint8(rgb_data)
 
         # Contrast stretching
-        # rgb_data = s2_contrast_stretch(rgb_data)
+        rgb_data = s2_contrast_stretch(rgb_data)
 
         rgb_plot = rgb_data.hvplot.rgb(
                 x="x",
@@ -122,6 +126,35 @@ def s2_hv_plot(items, bbox, type="RGB"):
                 yaxis=None
                 )
 
+
         # This is working with swipe and hvplot
         index_plot = TILES * rasterize(index_plot, expand=False)
         return index_plot
+
+
+def create_rgb_viewer(items, bbox):
+    # Time variable
+    time_var = [i.datetime for i in items]
+    time_date = [t.date() for t in time_var]
+
+    time_select = pn.widgets.DatePicker(
+        name="Date",
+        value=time_date[0], 
+        start=time_date[-1], 
+        end=time_date[0], 
+        enabled_dates=time_date,
+        description="Select the date for plotting."
+        )
+
+    s2_true_color_bind = pn.bind(
+        s2_hv_plot,
+        items=items,
+        bbox=bbox,
+        time=time_select,
+        # mask_clouds=clm_switch,
+        # resolution=res_select
+    )
+
+    # plot = s2_hv_plot(items, bbox, type="RGB")
+
+    return pn.Column(time_select, s2_true_color_bind)
