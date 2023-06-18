@@ -54,8 +54,7 @@ def plot_true_color_image(items, time, resolution):
     # TODO: add time downselection
 
     # Get the selected image
-    sel_item = [it for it in items if it.datetime.date() == time]
-
+    sel_item = [it for it in items if str(it.datetime.date()) == time]
     # aws_session = AWSSession(requester_pays=True)
     # with rio.Env(aws_session):
 
@@ -70,7 +69,7 @@ def plot_true_color_image(items, time, resolution):
 
     # Get the selected image and band combination
     # TODO: add stac_load here
-    out_data = s2_data.sel(band=[("red",), ("green",), ("blue",)], time=slice(time, time + datetime.timedelta(days=1)))#.median('time')
+    out_data = s2_data.sel(band=[("red",), ("green",), ("blue",)])#, time=slice(time, time + datetime.timedelta(days=1)))#.median('time')
 
     # spatial merge
     out_data = merge_arrays(
