@@ -35,8 +35,6 @@ def s2_contrast_stretch(in_data):
     print(f"scaling to range {p2} : {p98}")
     in_data.values = exposure.rescale_intensity(in_data, in_range=(p2, p98))
 
-    # out_data = exposure.rescale_intensity(in_data, in_range=(0, 75))
-
     return in_data
 
 def s2_hv_plot(items, bbox, time, type="RGB"):
@@ -45,11 +43,6 @@ def s2_hv_plot(items, bbox, time, type="RGB"):
     response = urlopen(
         "https://raw.githubusercontent.com/lalligagger/satgpt-app/main/tmp/items.json"
     )
-    # payload = json.loads(response.read())
-    # query = payload["features"]
-    # items = pystac.ItemCollection(query)
-
-    # sel_item = list(items)[0]
 
     mask = [i.datetime.date() == time for i in items]
     items = [b for a, b in zip(mask, items) if a]
@@ -154,7 +147,5 @@ def create_rgb_viewer(items, bbox):
         # mask_clouds=clm_switch,
         # resolution=res_select
     )
-
-    # plot = s2_hv_plot(items, bbox, type="RGB")
 
     return pn.Column(time_select, s2_true_color_bind)
