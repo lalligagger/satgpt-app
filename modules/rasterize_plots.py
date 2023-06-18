@@ -21,7 +21,7 @@ def s2_image_to_uint8(in_data):
     # Convert to reflectance and uint8 (range: 0-255)
     quant_value = 1e4
     out_data = (in_data / quant_value * 255).astype("uint8")
-    out_data = np.clip(out_data, 0, 255)
+    out_data = out_data.clip(0, 255)
 
     return out_data
 
@@ -31,15 +31,15 @@ def s2_contrast_stretch(in_data):
     Image enhancement: Contrast stretching.
     """
 
-    p2, p98 = np.percentile(in_data, (2.5, 97.5))
-    out_data = exposure.rescale_intensity(in_data, in_range=(p2, p98))
+    p2, p98 = np.percentile(in_data.ravel(), (2.5, 97.5))
+    out_data.values = exposure.rescale_intensity(in_data, in_range=(p2, p98))
     print(f"scaling to range {p2} : {p98}")
 
     # out_data = exposure.rescale_intensity(in_data, in_range=(0, 75))
 
     return out_data
 
-def s2_hv_plot(items, type="RGB"):
+def s2_hv_plot(items, bbox, type="RGB"):
     TILES = hv.element.tiles.OSM()
 
     response = urlopen(
@@ -53,8 +53,11 @@ def s2_hv_plot(items, type="RGB"):
 
     s2_data = stac_load(
         [sel_item],
+        bbox=bbox,
+        # lon = (bbox[0], bbox[2]),
+        # lat = (bbox[1], bbox[3]),
         bands=["red", "green", "blue", "nir"],
-        resolution=50,
+        # resolution=50,
         chunks={"time": 1, "x": 2048, "y": 2048},
         crs="EPSG:3857",
     )
