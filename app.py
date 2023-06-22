@@ -8,13 +8,12 @@ from pystac_client.client import Client
 
 from modules.chat_agent import component as chat_agent
 from modules.image_plots import (
-    # plot_s2_band_comb,
     plot_s2_spindex,
     plot_true_color_image,
 )
-from modules.image_statistics import HIST_PLACEHOLDER, plot_s2_spindex_hist
-from modules.spyndex_utils import get_s2_indices
-# from holoviews.plotting.util import process_cmap
+from modules.image_statistics import plot_spindex_kde
+from modules.spyndex_utils import get_s2_indices, get_index_metadata
+from modules.cmap_utils import get_cmap_options, get_cmap_plot
 
 # Load the floatpanel & terminal extension
 pn.extension("floatpanel")
@@ -22,7 +21,6 @@ pn.extension('terminal')
 
 # Disable webgl: https://github.com/holoviz/panel/issues/4855
 hv.renderer("bokeh").webgl = False
-
 
 client = Client.open('https://earth-search.aws.element84.com/v1/')
 
@@ -63,21 +61,20 @@ def create_s2_dashboard():
         description="Select the [index](https://davemlz-espectro-espectro-91350i.streamlit.app/) for overlay plot."
         )
 
-    # Create histogram button
-    # TODO: Fix hist functionality
-    # show_hist_bt = pn.widgets.Button(name="Create Histogram", icon="chart-histogram")
-    # show_hist_bt.on_click(plot_s2_spindex_hist)
-
     # Resolution slider
     res_select = pn.widgets.IntInput(
         name="Resolution",
         start=20, end=2500, step=50, value=250,
         description="Select the display resolution in meters.")
 
-    # Colormap selector (e. g Diverging) - This can be improved...
-    diverging_cmap = hv.plotting.util.list_cmaps(records=True, category="Diverging", reverse=False)
-    diverging_cmap = list(set([div_.name for div_ in diverging_cmap]))
-    cmap_select = pn.widgets.Select(name="Colormap", options=diverging_cmap, value="RdYlGn")
+    # Colormap select
+    # TODO: Add an option to revert the colormap
+    cmap_select = pn.widgets.Select(name="Colormap", groups=get_cmap_options(), value="RdYlGn")
+    cmap_view = pn.bind(get_cmap_plot, cmap=cmap_select)
+
+    # Mask clouds
+    mask_clouds_label = pn.widgets.StaticText(name='', value='Mask clouds?')
+    mask_clouds_switch = pn.widgets.Switch(name='Mask clouds?')
 
     # TODO: could these be merged into a single function that returns the slider plot?
     # Or returns 2 hv plots that are bound w/ Swipe below?
@@ -86,7 +83,8 @@ def create_s2_dashboard():
         plot_true_color_image,
         items=items,
         time=time_select,
-        resolution=res_select
+        resolution=res_select,
+        mask_cl=mask_clouds_switch
     )
 
     s2_spindex_bind = pn.bind(
@@ -95,19 +93,29 @@ def create_s2_dashboard():
         time=time_select,
         s2_spindex=s2_spindices_ac,
         resolution=res_select,
-        cmap=cmap_select
+        cmap=cmap_select,
+        mask_cl=mask_clouds_switch
     )
 
     # Use the Swipe tool to compare the spectral index with the true color image
     spindex_truecolor_swipe = pn.Swipe(
-        pn.pane.HoloViews(s2_true_color_bind, sizing_mode='stretch_both'),
-        pn.pane.HoloViews(s2_spindex_bind, sizing_mode='stretch_both')
+        pn.pane.HoloViews(s2_true_color_bind, sizing_mode='stretch_height'),
+        pn.pane.HoloViews(s2_spindex_bind, sizing_mode='stretch_height')
         )
 
     # Create the main layout
     main_layout = pn.Row(
-        pn.Column(HIST_PLACEHOLDER, spindex_truecolor_swipe)  # , show_hist_bt),
+        pn.Row(spindex_truecolor_swipe)
     )
+
+    # Create a button to open the chat
+    chat_btn = pn.widgets.Button(name="Start New Search...", icon='satellite')
+
+    # This button will open the kde plot of the computed spectral index
+    kde_btn = pn.widgets.Button(name="Show Density plot")
+
+    # Metadata button
+    index_meta_btn = pn.widgets.Button(name="Show Metadata")
 
     # Create the dashboard and turn into a deployable application
     s2_dash = pn.template.FastListTemplate(
@@ -116,25 +124,40 @@ def create_s2_dashboard():
         theme="default",
         main=[main_layout],
         sidebar=[
+            chat_btn,
             time_select,
-            s2_spindices_ac,
             res_select,
-            cmap_select
-            # clm_title,
-            # clm_switch,
+            s2_spindices_ac,
+            pn.Row(kde_btn, index_meta_btn),
+            pn.Column(cmap_select, cmap_view),
+            pn.Column(mask_clouds_label, mask_clouds_switch),
         ],
-        modal=[chat_agent]
+        modal=[pn.Row()]
     )
-    # Create a button
-    modal_btn = pn.widgets.Button(name="Start New Search...", icon='satellite')
 
     # Callback that will open the modal when the button is clicked
-    def about_callback(event):
+    def chat_callback(event):
+        s2_dash.modal[0].clear()
+        s2_dash.modal[0].append(chat_agent)
         s2_dash.open_modal()
 
-    # Link the button to the callback and append it to the sidebar
-    modal_btn.on_click(about_callback)
-    s2_dash.sidebar.insert(0, modal_btn)
+    # TODO: Update the floatpanel content (status: open) when data changes
+    def show_kde_plot(event):
+        s2_dash.modal[0].clear()
+        s2_dash.modal[0].append(plot_spindex_kde())
+        s2_dash.open_modal()
+        s2_dash.close_modal()  # Hack
+
+    def show_index_meta(event):
+        s2_dash.modal[0].clear()
+        s2_dash.modal[0].append(get_index_metadata())
+        s2_dash.open_modal()
+        s2_dash.close_modal()  # Hack
+
+    # Link the button to the respective callback
+    chat_btn.on_click(chat_callback)
+    kde_btn.on_click(show_kde_plot)
+    index_meta_btn.on_click(show_index_meta)
 
     return s2_dash
 
