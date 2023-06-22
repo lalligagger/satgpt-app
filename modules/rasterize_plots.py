@@ -37,7 +37,7 @@ def s2_contrast_stretch(in_data):
 
     return in_data
 
-def s2_hv_plot(items, bbox, time, type="RGB"):
+def s2_hv_plot(items, time, bbox=None, type="RGB"):
     TILES = hv.element.tiles.OSM()
 
     response = urlopen(
@@ -125,7 +125,7 @@ def s2_hv_plot(items, bbox, time, type="RGB"):
         return index_plot
 
 
-def create_rgb_viewer(items, bbox):
+def create_rgb_viewer(items, bbox=None):
     # Time variable
     time_var = [i.datetime for i in items]
     time_date = [t.date() for t in time_var]
