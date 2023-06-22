@@ -1,17 +1,19 @@
 import spyndex
+import panel as pn
+from modules.constants import FLOATPANEL_CONFIGS
 
 S2_BAND_MAPPING = {
-    "A": ("coastal",),
-    "N": ("nir",),
-    "N2": ("nir08",),
-    "R": ("red",),
-    "G": ("green",),
-    "B": ("blue",),
-    "RE1": ("rededge1",),
-    "RE2": ("rededge2",),
-    "RE3": ("rededge3",),
-    "S1": ("swir16",),
-    "S2": ("swir22",),
+    "A": "coastal",
+    "B": "blue",
+    "G": "green",
+    "R": "red",
+    "RE1": "rededge1",
+    "RE2": "rededge2",
+    "RE3": "rededge3",
+    "N": "nir",
+    "N2": "nir08",
+    "S1": "swir16",
+    "S2": "swir22",
 }
 
 # Constants
@@ -80,6 +82,9 @@ def get_index_props(spindex):
         "index_bands": get_index_bands(spindex),
         "stac_bands": to_stac_bands(spindex),
         "constants": get_index_constants(spindex),
+        "formula": SPYNDEX_INDICES[spindex].formula,
+        "reference": SPYNDEX_INDICES[spindex].reference,
+        "contributor": SPYNDEX_INDICES[spindex].contributor,
     }
 
 
@@ -100,7 +105,45 @@ def compute_index(in_data, spindex):
     if constants:
         out_params.update(constants)
 
-    return spyndex.computeIndex(
-        index=[index_name],
-        params=out_params
+    return spyndex.computeIndex(index=[index_name], params=out_params)
+
+
+def get_index_metadata():
+    spindex = pn.state.cache["index"]["meta"]
+    short_name = spindex["short_name"]
+    long_name = spindex["long_name"]
+    bands = ", ".join(spindex["stac_bands"]).upper()
+    # constants = spindex["constants"]
+    contributor = spindex["contributor"]
+    formula = spindex["formula"]  # TODO: Formula in latex
+    reference = spindex["reference"]
+
+    markdown = f"""
+
+    **Long name**  
+    {long_name}
+
+    **Bands**  
+    {bands}
+
+    **Formula**  
+    {formula}
+
+    **Contributors**  
+    {contributor}
+
+    **Reference**  
+    {reference}
+
+    """
+
+    spyndex_pane = pn.layout.FloatPanel(
+        pn.pane.Markdown(markdown),
+        name=f"{short_name}",
+        contained=False,
+        position="center",
+        margin=20,
+        config=FLOATPANEL_CONFIGS,
     )
+
+    return spyndex_pane
