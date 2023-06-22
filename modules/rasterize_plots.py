@@ -54,7 +54,7 @@ def s2_hv_plot(items, bbox, time, type="RGB"):
         # lon = (bbox[0], bbox[2]),
         # lat = (bbox[1], bbox[3]),
         bands=["red", "green", "blue", "nir"],
-        # resolution=50,
+        resolution=100,
         chunks={"time": 1, "x": 2048, "y": 2048},
         crs="EPSG:3857",
     )
