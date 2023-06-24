@@ -126,9 +126,13 @@ class MapManager(param.Parameterized):
         source: Optional[str] = 'Aqua'
     ):
         """
-        Loads a map with Modis (source = 'Aqua' or 'Terra') world coverage by date. 
+        Sets basemap with Modis (source = 'Aqua' or 'Terra') world coverage by date. 
         This tool does NOT require a prior STAC search. Currently only supports RGB views, no spectral indices.
         """
+        # Valid: 
+        # https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi
+        # ?Service=WMTS&Request=GetTile&Version=1.0.0&layer=MODIS_Terra_CorrectedReflectance_TrueColor&tilematrixset=250m
+        # &TileMatrix=6&TileCol=36&TileRow=13&TIME=2012-07-09&style=default&Format=image%2Fjpeg
 
         tileMatrixSet='GoogleMapsCompatible_Level9'
         layer=f'MODIS_{source}_CorrectedReflectance_TrueColor'
@@ -136,42 +140,21 @@ class MapManager(param.Parameterized):
         tile_path = f'{layer}/default/{datestring}/{tileMatrixSet}/' + '{Z}/{Y}/{X}.jpg'
         self.tile_url = base_url + tile_path
         return "Basemap is set. Return nothing but a text confirmation to let the user know."
-    
-    # Valid: 
-    # https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi
-    # ?Service=WMTS&Request=GetTile&Version=1.0.0&layer=MODIS_Terra_CorrectedReflectance_TrueColor&tilematrixset=250m
-    # &TileMatrix=6&TileCol=36&TileRow=13&TIME=2012-07-09&style=default&Format=image%2Fjpeg
 
 
-    def show_datacube(
-        self,
-        # bbox: Optional[str],
-    ):
+    def show_datacube(self):
         """Display the datacube viewer for the current items. Currently only supports RGB views, no spectral indices."""
-        
-        # item_collection = pystac.ItemCollection(self.items_dict['features'])
-        # rgb = self.create_rgb_viewer(item_collection)
-        
-        # item_collection = pystac.ItemCollection(self.items_dict['features'])
-        rgb = self.create_rgb_viewer()
-        
-        # try:
-        #     bbox = tuple(map(float, bbox.split(',')))
-        #     rgb = create_rgb_viewer(item_collection, bbox=bbox)
-        # except:
-        #     rgb = create_rgb_viewer(item_collection)
 
+        rgb = self.create_rgb_viewer()
         chat_box.append({"SatGPT": pn.panel(rgb)})
         
         return "Datacube is loaded to chat. Return nothing other than 'Done!' to the user."
 
     def s2_hv_plot(
         self, items, time, type="RGB", 
-        # tile_url='https://tile.openstreetmap.org/{Z}/{X}/{Y}.png'
         ):
 
         TILES = hv.Tiles(self.tile_url)
-
         # TILES = gv.WMTS(WMTSTileSource(url=url)) # maybe?
 
         mask = [i.datetime.date() == time for i in items]
@@ -179,11 +162,8 @@ class MapManager(param.Parameterized):
         bbox = tuple(map(float, self.bbox.split(',')))
         
         s2_data = stac_load(
-            # [sel_item],
             items,
             bbox=bbox,
-            # lon = (bbox[0], bbox[2]),
-            # lat = (bbox[1], bbox[3]),
             bands=["red", "green", "blue", "nir"],
             resolution=100,
             chunks={"time": 1, "x": 2048, "y": 2048},
@@ -206,9 +186,6 @@ class MapManager(param.Parameterized):
             rgb_plot = rgb_data.hvplot.rgb(
                     x="x",
                     y="y",
-                    # expand=False,
-                    # rasterize=True,
-                    # dynspread=True,
                     bands='band',
                     frame_height=500,
                     frame_width=500,
@@ -216,10 +193,9 @@ class MapManager(param.Parameterized):
                     yaxis=None
                     )  # .redim.nodata(value=0)
 
-            
             # This is working with swipe and hvplot
             rgb_plot = TILES * rasterize(rgb_plot, expand=False)
-            # rgb_plot = rasterize(rgb_plot, expand=False)
+
             return(rgb_plot)
             
     def create_rgb_viewer(self):
@@ -293,7 +269,7 @@ map_tool = StructuredTool.from_function(load_items)
 tools = [
     search_tool, 
     map_tool, 
-    gribs_tool, 
+    # gribs_tool, # not working yet
     plot_tool,
     datacube_tool
     ]
