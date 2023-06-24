@@ -23,12 +23,41 @@ from modules.rasterize_plots import s2_hv_plot, create_rgb_viewer
 # this little guy isn't doing much yet. could take care of state (bbox, bands/ indeces, etc.)
 
 class MapManager(param.Parameterized):
+    ## TODO: zonal stats
     gdf = param.DataFrame(
         gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
     )
+
+    ## STAC search
+    # bbox = # (=seattle)
+    # toi = # (now minus 1-2 months)
     items_dict = param.Dict({})
+
+    ## Basic view
+    # datacube = 
+    # url =
+    # collection(s) = # (satellites)
+    # band = 'RGB'
+    # available_dates = 
+    # selected_date(s) =
+    # map_bounds =
+    # mask_clouds = 
+    # clip_range = 
+    # cmap =  # (if not RGB)
+
+    ## Split view
+    # split = True
+    # split_band = 'NDVI'
+
+    ## Resampling
+    # max_resolution = 
+    # resample_period = 
+    # 
+
+    ## TODO: decide if we should use
     # def panel(self):
     #     return pn.Column(pn.panel(self._map))
+
 map_mgr = MapManager()
 # these are just a few python functions (note the typing) # TODO: move to modules.tools
 
@@ -153,4 +182,6 @@ tools = [
     datacube_tool
     ]
 
+
+# chatbox component needs to be here due to how we add content above
 chat_box = pn.widgets.ChatBox()
