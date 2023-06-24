@@ -16,6 +16,7 @@ import hvplot.xarray
 
 from modules.image_processing import s2_contrast_stretch, s2_image_to_uint8
 
+## alt mapping
 # import folium
 # from folium.raster_layers import TileLayer
 
@@ -78,10 +79,9 @@ class MapManager(param.Parameterized):
         self.bbox = bbox  # TODO: change to tuple?
 
         client = Client.open(url)
-
         result = client.search(collections=[collections], bbox=bbox, datetime=dtime)
-
         items_dict = result.get_all_items_as_dict()
+
         self.items_dict = items_dict
         self.gdf = gpd.GeoDataFrame.from_features(items_dict)
 
@@ -92,8 +92,6 @@ class MapManager(param.Parameterized):
     # TODO: switch to holoviews? or ok for demo?
     def view_footprints(
         self,
-        # latitude: float,
-        # longitude: float,
     ):
         """Load Sentinel & Landsat STAC item footprints to a map. Not for images. DO NOT use for Aqua/Terra/MODIS."""
 
@@ -124,9 +122,8 @@ class MapManager(param.Parameterized):
                 )
             }
         )
-        return (
-            "Plot is loaded to chat. Return nothing other than 'Plotted!' to the user."
-        )
+
+        return "Plot is loaded to chat. Return nothing other than 'Plotted!' to the user."
 
     def set_basemap(
         self, datestring: str = "2023-06-09", source: Optional[str] = "Aqua"
@@ -153,9 +150,7 @@ class MapManager(param.Parameterized):
         rgb = self.create_rgb_viewer()
         chat_box.append({"SatGPT": pn.panel(rgb)})
 
-        return (
-            "Datacube is loaded to chat. Return nothing other than 'Done!' to the user."
-        )
+        return "Datacube is loaded to chat. Return nothing other than 'Done!' to the user."
 
     # TODO: replace with modules.image_plots
     def s2_hv_plot(
@@ -253,7 +248,6 @@ tools = [
     plot_tool,
     datacube_tool,
 ]
-
 
 # chatbox component needs to be here due to how we add content above
 chat_box = pn.widgets.ChatBox(ascending=True)
