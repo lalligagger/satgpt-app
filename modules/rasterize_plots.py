@@ -37,12 +37,14 @@ def s2_contrast_stretch(in_data):
 
     return in_data
 
-def s2_hv_plot(items, time, bbox=None, type="RGB"):
-    TILES = hv.element.tiles.OSM()
-
-    response = urlopen(
-        "https://raw.githubusercontent.com/lalligagger/satgpt-app/main/tmp/items.json"
-    )
+def s2_hv_plot(
+    items, time, bbox=None, type="RGB", 
+    # tile_url='https://tile.openstreetmap.org/{Z}/{X}/{Y}.png'
+    ):
+    # TILES = hv.element.tiles.OSM()
+    # response = urlopen(
+    #     "https://raw.githubusercontent.com/lalligagger/satgpt-app/main/tmp/items.json"
+    # )
 
     mask = [i.datetime.date() == time for i in items]
     items = [b for a, b in zip(mask, items) if a]
@@ -59,6 +61,7 @@ def s2_hv_plot(items, time, bbox=None, type="RGB"):
         crs="EPSG:3857",
     )
 
+    # TODO: add spatial merge back here
     out_data = s2_data.isel(time=0).to_array(dim="band")
 
     if type == 'RGB':
@@ -86,7 +89,8 @@ def s2_hv_plot(items, time, bbox=None, type="RGB"):
 
         
         # This is working with swipe and hvplot
-        rgb_plot = TILES * rasterize(rgb_plot, expand=False)
+        # rgb_plot = TILES * rasterize(rgb_plot, expand=False)
+        rgb_plot = rasterize(rgb_plot, expand=False)
         return(rgb_plot)
 
     if type=='IDX':
@@ -125,7 +129,10 @@ def s2_hv_plot(items, time, bbox=None, type="RGB"):
         return index_plot
 
 
-def create_rgb_viewer(items, bbox=None):
+# TODO: Move under MapManager
+def create_rgb_viewer(items, bbox=None, tile_url='https://tile.openstreetmap.org/{Z}/{X}/{Y}.png'):
+    TILES = hv.Tiles(tile_url)
+    
     # Time variable
     time_var = [i.datetime for i in items]
     time_date = [t.date() for t in time_var]
