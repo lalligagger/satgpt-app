@@ -1,7 +1,4 @@
 from typing import Tuple, Optional, List, Dict
-
-import folium
-from folium.raster_layers import TileLayer
 import panel as pn
 import param
 from pystac_client.client import Client
@@ -18,6 +15,9 @@ from langchain.tools import StructuredTool
 import holoviews as hv
 import hvplot.xarray
 
+# import folium
+# from folium.raster_layers import TileLayer
+
 # from bokeh.models import WMTSTileSource
 # import geoviews as gv
 
@@ -26,9 +26,7 @@ import pandas as pd
 from datetime import datetime
 from holoviews.operation.datashader import rasterize
 
-# from modules.rasterize_plots import create_rgb_viewer
-
-# this little guy isn't doing much yet. could take care of state (bbox, bands/ indeces, etc.)
+# TODO: move these back to some module
 def s2_contrast_stretch(in_data):
     """
     Image enhancement: Contrast stretching.
@@ -120,6 +118,34 @@ class MapManager(param.Parameterized):
             'count': result.matched(),
             }
 
+    def view_footprints(
+        self,
+        # latitude: float,
+        # longitude: float,
+    ):
+        """Load Sentinel & Landsat STAC item footprints to a map. Not for images. DO NOT use for Aqua/Terra/MODIS."""
+
+        m = self.gdf.loc[:, ['geometry']].set_crs('epsg:4326').explore(tiles="CartoDB positron") # TODO: basemap updates
+
+        chat_box.append(
+            {"SatGPT": pn.pane.plot.Folium(m, height=400)}
+            )
+        return "Map is loaded to chat. Return nothing but a text confirmation to let the user know."
+
+    def plot_item_metadata(
+        self,
+        field: str = 'eo:cloud_cover',
+    ):
+        """Plot any field from the current STAC items, e.g. cloud cover. No images, just STAC metadata fields."""
+        dates = [ds.split('T')[0] for ds in self.gdf.loc[:, ['datetime']].values.flatten()]
+        dts = [datetime.strptime(d, '%Y-%m-%d') for d in dates]
+        self.gdf.loc[:, ['date']] = dts
+
+        chat_box.append(
+            {"SatGPT": pn.panel(self.gdf.loc[:, ['date', 'eo:cloud_cover']].set_index('date').plot())}
+            )
+        return "Plot is loaded to chat. Return nothing other than 'Plotted!' to the user."
+
     def set_basemap(
         self,
         datestring: str = '2023-06-09',
@@ -143,13 +169,14 @@ class MapManager(param.Parameterized):
 
 
     def show_datacube(self):
-        """Display the datacube viewer for the current items. Currently only supports RGB views, no spectral indices."""
+        """Display the datacube viewer for the current items (images). Currently only supports RGB views, no spectral indices."""
 
         rgb = self.create_rgb_viewer()
         chat_box.append({"SatGPT": pn.panel(rgb)})
         
         return "Datacube is loaded to chat. Return nothing other than 'Done!' to the user."
 
+    # TODO: make private or move to module
     def s2_hv_plot(
         self, items, time, type="RGB", 
         ):
@@ -226,45 +253,22 @@ class MapManager(param.Parameterized):
 
         return pn.Column(time_select, s2_true_color_bind)
 
-def load_items(
-    latitude: float,
-    longitude: float,
-):
-    """Load Sentinel & Landsat STAC items to a map. DO NOT use for Aqua/Terra/MODIS"""
-
-    m = map_mgr.gdf.loc[:, ['geometry']].set_crs('epsg:4326').explore(tiles="CartoDB positron") # TODO: basemap updates
-
-    chat_box.append(
-        {"SatGPT": pn.pane.plot.Folium(m, height=400)}
-        )
-    return "Map is loaded to chat. Return nothing but a text confirmation to let the user know."
 
 
 
-def plot_items(
-    field: str = 'eo:cloud_cover',
-):
-    """Plot any field from the current STAC items, e.g. cloud cover. No images, just STAC metadata fields."""
-    dates = [ds.split('T')[0] for ds in map_mgr.gdf.loc[:, ['datetime']].values.flatten()]
-    dts = [datetime.strptime(d, '%Y-%m-%d') for d in dates]
-    map_mgr.gdf.loc[:, ['date']] = dts
 
-    chat_box.append(
-        {"SatGPT": pn.panel(map_mgr.gdf.loc[:, ['date', 'eo:cloud_cover']].set_index('date').plot())}
-        )
-    return "Plot is loaded to chat. Return nothing other than 'Plotted!' to the user."
+
 
 
 map_mgr = MapManager()
 
 # define tools
-# tools == a wrapped function above
+# tools == a wrapped method above
 search_tool = StructuredTool.from_function(map_mgr.stac_search)
 gribs_tool = StructuredTool.from_function(map_mgr.set_basemap)
 datacube_tool  = StructuredTool.from_function(map_mgr.show_datacube)
-
-plot_tool = StructuredTool.from_function(plot_items)
-map_tool = StructuredTool.from_function(load_items)
+plot_tool = StructuredTool.from_function(map_mgr.plot_item_metadata)
+map_tool = StructuredTool.from_function(map_mgr.view_footprints)
 
 tools = [
     search_tool, 
@@ -276,4 +280,4 @@ tools = [
 
 
 # chatbox component needs to be here due to how we add content above
-chat_box = pn.widgets.ChatBox()
+chat_box = pn.widgets.ChatBox(ascending=True)
