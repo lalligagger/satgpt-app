@@ -30,7 +30,7 @@ So far, the app can help retrieve Sentinel 2 optical imagery based on the user's
         `python -m panel serve app.py --allow-websocket-origin=YOUR_SUBDOMAIN-5006.preview.app.github.dev`
         - If you are running in VSCode desktop, you'll want to use localhost:
 
-        `python -m panel serve app.py --allow-websocket-origin=http://127.0.0.1:5006`
+        `python -m panel serve app.py --allow-websocket-origin=127.0.0.1:5006`
 
 Note: you only need to set this up once. All GitHub accounts now come with 60 CPU hours (30 hours on a 2-CPU instance) of Codespaces use per month. All git commands and authentication should "just work" for your fork, and files will be saved in between commits. It will likely remain the top-supported deployment for SatGPT, which will require the management of one or more individual API keys for users. Further instructions will be provided on how to keep your instance up to date without going through a full rebuild.
 
