@@ -63,10 +63,6 @@ class MapManager(param.Parameterized):
     # resample_period =
     #
 
-    ## TODO: decide if we should use
-    # def panel(self):
-    #     return pn.Column(pn.panel(self._map))
-
     def stac_search(
         self,
         bbox: str,
@@ -101,7 +97,7 @@ class MapManager(param.Parameterized):
             .explore(tiles="CartoDB positron")
         )  # TODO: could use basemap, have optional tooltips, etc.
 
-        chat_box.append({"SatGPT": pn.pane.plot.Folium(m, height=400)})
+        self.media = pn.pane.plot.Folium(m, height=400)
         return "Map is loaded to chat. Return nothing but a text confirmation to let the user know."
 
     def plot_item_metadata(
@@ -115,13 +111,9 @@ class MapManager(param.Parameterized):
         dts = [datetime.strptime(d, "%Y-%m-%d") for d in dates]
         self.gdf.loc[:, ["date"]] = dts
 
-        chat_box.append(
-            {
-                "SatGPT": pn.panel(
+        self.media = pn.panel(
                     self.gdf.loc[:, ["date", "eo:cloud_cover"]].set_index("date").plot()
                 )
-            }
-        )
 
         return "Plot is loaded to chat. Return nothing other than 'Plotted!' to the user."
 
@@ -148,7 +140,7 @@ class MapManager(param.Parameterized):
         """Display the datacube viewer for the current items (images). Currently only supports RGB views, no spectral indices."""
 
         rgb = self.create_rgb_viewer()
-        chat_box.append({"SatGPT": pn.panel(rgb)})
+        self.media = pn.panel(rgb)
 
         return "Datacube is loaded to chat. Return nothing other than 'Done!' to the user."
 
@@ -175,7 +167,7 @@ class MapManager(param.Parameterized):
             crs="EPSG:3857",
         )
 
-        # TODO: add spatial merge back here
+        # TODO: add spatial merge back here (from image_plots?)
         out_data = s2_data.isel(time=0).to_array(dim="band")
 
         if type == "RGB":
@@ -222,7 +214,6 @@ class MapManager(param.Parameterized):
         s2_true_color_bind = pn.bind(
             self.s2_hv_plot,
             items=items,
-            # bbox=bbox,
             time=time_select,
             # mask_clouds=clm_switch,
             # resolution=res_select
@@ -248,6 +239,3 @@ tools = [
     plot_tool,
     datacube_tool,
 ]
-
-# chatbox component needs to be here due to how we add content above
-chat_box = pn.widgets.ChatBox(ascending=True)
