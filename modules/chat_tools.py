@@ -152,7 +152,7 @@ class MapManager(param.Parameterized):
 
         return "Datacube is loaded to chat. Return nothing other than 'Done!' to the user."
 
-    # TODO: replace with modules.image_plots
+    # TODO: replace with modules.image_plots. Maybe just handle per-band/per-time data loading here & then send to plot calls?
     def s2_hv_plot(
         self,
         items,
