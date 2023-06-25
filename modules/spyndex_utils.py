@@ -16,6 +16,20 @@ S2_BAND_MAPPING = {
     "S2": "swir22",
 }
 
+LANDSAT_BAND_MAPPING = {
+    "A": "coastal",
+    "B": "blue",
+    "G": "green",
+    "R": "red",
+    # "RE1": "rededge1",
+    # "RE2": "rededge2",
+    # "RE3": "rededge3",
+    "N": "nir08",
+    # "N2": "nir08", 
+    "S1": "swir16",
+    "S2": "swir22",
+}
+
 # Constants
 SPYNDEX_CONSTANTS = spyndex.constants
 

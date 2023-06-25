@@ -44,6 +44,7 @@ class MapManager(param.Parameterized):
     items_dict = param.Dict({})
 
     ## Basic view
+    media = None
     # datacube =
     # band = 'RGB'
     # available_dates =
@@ -70,7 +71,7 @@ class MapManager(param.Parameterized):
         url: Optional[str] = "https://earth-search.aws.element84.com/v1/",
         collections: Optional[list] = ["sentinel-2-l2a"],
     ) -> str:
-        """Perform a STAC search."""
+        """Perform a STAC search for Sentinel (sentinel-2-l2a) or Landsat (landsat-c2-l2) L2 images."""
 
         self.bbox = bbox  # TODO: change to tuple?
 
