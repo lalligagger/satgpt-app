@@ -2,7 +2,7 @@ import spyndex
 import panel as pn
 from modules.constants import FLOATPANEL_CONFIGS
 
-S2_BAND_MAPPING = {
+BAND_MAPPING = {
     "A": "coastal",
     "B": "blue",
     "G": "green",
@@ -16,7 +16,7 @@ S2_BAND_MAPPING = {
     "S2": "swir22",
 }
 
-LANDSAT_BAND_MAPPING = {
+LANDSAT_BAND_MAPPING = {  # We can drop this dictionary
     "A": "coastal",
     "B": "blue",
     "G": "green",
@@ -44,7 +44,7 @@ def to_stac_bands(spindex):
     """
 
     return [
-        S2_BAND_MAPPING[b]
+        BAND_MAPPING[b]
         for b in SPYNDEX_INDICES[spindex].bands
         if b not in SPYNDEX_CONSTANTS
     ]
@@ -72,6 +72,18 @@ def get_index_constants(spindex):
             for constant in constants_lst
         ]
     return None
+
+
+def get_oli_indices():
+    """Create a list with all available landsat indices"""
+
+    oli_indices = []
+    for spindex in SPYNDEX_INDICES:
+        application_domain = SPYNDEX_INDICES[spindex].application_domain
+        platforms = SPYNDEX_INDICES[spindex].platforms
+        if "Landsat-OLI" in platforms and application_domain != "kernel":
+            oli_indices.append(SPYNDEX_INDICES[spindex].short_name)
+    return oli_indices
 
 
 def get_s2_indices():
