@@ -3,17 +3,20 @@ import panel as pn
 import param
 from pystac_client.client import Client
 import geopandas as gpd
-from shapely.geometry import shape, Polygon
+# from shapely.geometry import shape, Polygon
 from odc.stac import stac_load
 import pystac
 import rasterio
-from skimage import exposure
+from rioxarray.merge import merge_arrays
+
+# from skimage import exposure
 
 from langchain.tools import StructuredTool
 
 import holoviews as hv
 import hvplot.xarray
 
+from modules.image_plots import plot_true_color_image
 from modules.image_processing import s2_contrast_stretch, s2_image_to_uint8
 
 ## alt mapping
@@ -23,8 +26,8 @@ from modules.image_processing import s2_contrast_stretch, s2_image_to_uint8
 # from bokeh.models import WMTSTileSource
 # import geoviews as gv
 
-import numpy as np
-import pandas as pd
+# import numpy as np
+# import pandas as pd
 from datetime import datetime
 from holoviews.operation.datashader import rasterize
 
@@ -40,7 +43,7 @@ class MapManager(param.Parameterized):
     bbox = param.String()  # (=seattle)
     # toi = # (now minus 1-2 months)
     # url =
-    # collection(s) = # (satellites)
+    # collection = # (~satellites)
     items_dict = param.Dict({})
 
     ## Basic view
@@ -62,21 +65,21 @@ class MapManager(param.Parameterized):
     ## Resampling
     # max_resolution =
     # resample_period =
-    #
+    # zonal_url =  # point to e.g. geojson gist?
 
     def stac_search(
         self,
         bbox: str,
         dtime: str,
+        collection: str = "sentinel-2-l2a",
         url: Optional[str] = "https://earth-search.aws.element84.com/v1/",
-        collections: Optional[list] = ["sentinel-2-l2a"],
     ) -> str:
         """Perform a STAC search for Sentinel (sentinel-2-l2a) or Landsat (landsat-c2-l2) L2 images."""
 
         self.bbox = bbox  # TODO: change to tuple?
 
         client = Client.open(url)
-        result = client.search(collections=[collections], bbox=bbox, datetime=dtime)
+        result = client.search(collections=[collection], bbox=bbox, datetime=dtime)
         items_dict = result.get_all_items_as_dict()
 
         self.items_dict = items_dict
@@ -101,7 +104,7 @@ class MapManager(param.Parameterized):
         self.media = pn.pane.plot.Folium(m, height=400)
         return "Map is loaded to chat. Return nothing but a text confirmation to let the user know."
 
-    def plot_item_metadata(
+    def plot_metadata(
         self,
         field: str = "eo:cloud_cover",
     ):
@@ -113,7 +116,7 @@ class MapManager(param.Parameterized):
         self.gdf.loc[:, ["date"]] = dts
 
         self.media = pn.panel(
-                    self.gdf.loc[:, ["date", "eo:cloud_cover"]].set_index("date").plot()
+                    self.gdf.loc[:, ["date", field]].set_index("date").plot()
                 )
 
         return "Plot is loaded to chat. Return nothing other than 'Plotted!' to the user."
@@ -140,63 +143,12 @@ class MapManager(param.Parameterized):
     def show_datacube(self):
         """Display the datacube viewer for the current items (images). Currently only supports RGB views, no spectral indices."""
 
-        rgb = self.create_rgb_viewer()
+        rgb = self._rgb_viewer()
         self.media = pn.panel(rgb)
 
         return "Datacube is loaded to chat. Return nothing other than 'Done!' to the user."
 
-    # TODO: replace with modules.image_plots. Maybe just handle per-band/per-time data loading here & then send to plot calls?
-    def s2_hv_plot(
-        self,
-        items,
-        time,
-        type="RGB",
-    ):
-        TILES = hv.Tiles(self.tile_url)
-        # TILES = gv.WMTS(WMTSTileSource(url=url)) # maybe?
-
-        mask = [i.datetime.date() == time for i in items]
-        items = [b for a, b in zip(mask, items) if a]
-        bbox = tuple(map(float, self.bbox.split(",")))
-
-        s2_data = stac_load(
-            items,
-            bbox=bbox,
-            bands=["red", "green", "blue", "nir"],
-            resolution=100,
-            chunks={"time": 1, "x": 2048, "y": 2048},
-            crs="EPSG:3857",
-        )
-
-        # TODO: add spatial merge back here (from image_plots?)
-        out_data = s2_data.isel(time=0).to_array(dim="band")
-
-        if type == "RGB":
-            # RGB data
-            rgb_data = out_data.sel(band=["red", "green", "blue"])
-
-            # Convert the image to uint8
-            rgb_data = s2_image_to_uint8(rgb_data)
-
-            # Contrast stretching
-            rgb_data = s2_contrast_stretch(rgb_data)
-
-            rgb_plot = rgb_data.hvplot.rgb(
-                x="x",
-                y="y",
-                bands="band",
-                frame_height=500,
-                frame_width=500,
-                xaxis=None,
-                yaxis=None,
-            )  # .redim.nodata(value=0)
-
-            # This is working with swipe and hvplot
-            rgb_plot = TILES * rasterize(rgb_plot, expand=False)
-
-            return rgb_plot
-
-    def create_rgb_viewer(self):
+    def _rgb_viewer(self):
         items = pystac.ItemCollection(self.items_dict["features"])
 
         # Time variable
@@ -213,11 +165,11 @@ class MapManager(param.Parameterized):
         )
 
         s2_true_color_bind = pn.bind(
-            self.s2_hv_plot,
+            plot_true_color_image,
             items=items,
             time=time_select,
-            # mask_clouds=clm_switch,
-            # resolution=res_select
+            mask_cl=True,
+            resolution=100
         )
 
         return pn.Column(time_select, s2_true_color_bind)
@@ -230,7 +182,7 @@ map_mgr = MapManager()
 search_tool = StructuredTool.from_function(map_mgr.stac_search)
 gribs_tool = StructuredTool.from_function(map_mgr.set_basemap)
 datacube_tool = StructuredTool.from_function(map_mgr.show_datacube)
-plot_tool = StructuredTool.from_function(map_mgr.plot_item_metadata)
+plot_tool = StructuredTool.from_function(map_mgr.plot_metadata)
 map_tool = StructuredTool.from_function(map_mgr.view_footprints)
 
 tools = [

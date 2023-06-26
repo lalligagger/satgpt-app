@@ -22,8 +22,8 @@ def s2_image_to_uint8(in_data):
     """
 
     # Convert to reflectance and uint8 (range: 0-255)
-    quant_value = 1e4
-    out_data = (in_data / quant_value * 255).astype("uint8")
+    # quant_value = 1e4
+    out_data = (in_data / in_data.max() * 255).astype("uint8")
     out_data = out_data.clip(0, 255)
 
     return out_data
