@@ -36,6 +36,7 @@ class MapManager(param.Parameterized):
     data = None
     product = param.Selector(['RGB'])
     mask_clouds = param.Boolean()
+    mask = None
     # available_dates =
     # selected_date(s) =
     tile_url = param.String("https://tile.openstreetmap.org/{Z}/{X}/{Y}.png")

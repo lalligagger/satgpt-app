@@ -51,7 +51,7 @@ def plot_true_color_image(items, time, resolution, mask_cl, range):
     # TODO: Add flag for S2 vs. Landsat cloud mask
     s2_data = stac_load(
         sel_item,
-        bands=rgb_bands,# + ["scl"],
+        # bands=rgb_bands,# + ["scl"],
         resolution=resolution,
         chunks={'time': 1, 'x': 2048, 'y': 2048},
         crs='EPSG:3857',
