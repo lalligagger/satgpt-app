@@ -1,35 +1,20 @@
+from datetime import datetime
+import holoviews as hv
+import hvplot.xarray
+from holoviews.operation.datashader import rasterize
 from typing import Optional
 import panel as pn
 import param
 from pystac_client.client import Client
 import geopandas as gpd
-# from shapely.geometry import shape, Polygon
-from odc.stac import stac_load
 import pystac
 import rasterio
 from rioxarray.merge import merge_arrays
-
-# from skimage import exposure
-
 from langchain.tools import StructuredTool
 
-import holoviews as hv
-import hvplot.xarray
-
+from modules.spyndex_utils import get_oli_indices, get_s2_indices
 from modules.image_plots import plot_true_color_image
 from modules.image_processing import s2_contrast_stretch, s2_image_to_uint8
-
-## alt mapping
-# import folium
-# from folium.raster_layers import TileLayer
-
-# from bokeh.models import WMTSTileSource
-# import geoviews as gv
-
-# import numpy as np
-# import pandas as pd
-from datetime import datetime
-from holoviews.operation.datashader import rasterize
 
 
 class MapManager(param.Parameterized):
@@ -42,14 +27,14 @@ class MapManager(param.Parameterized):
     ## STAC search
     bbox = param.String()  # (=seattle)
     # toi = # (now minus 1-2 months)
-    # url =
+    stac_url = "https://earth-search.aws.element84.com/v1/"
     # collection = # (~satellites)
     items_dict = param.Dict({})
 
     ## Basic view
     media = None
     # datacube =
-    # band = 'RGB'
+    product = param.Selector(['RGB'])
     # available_dates =
     # selected_date(s) =
     tile_url = param.String("https://tile.openstreetmap.org/{Z}/{X}/{Y}.png")
@@ -77,6 +62,17 @@ class MapManager(param.Parameterized):
         """Perform a STAC search for Sentinel (sentinel-2-l2a) or Landsat (landsat-c2-l2) L2 images."""
 
         self.bbox = bbox  # TODO: change to tuple?
+        self.collection = collection
+
+        if collection == "sentinel-2-l2a":
+            self.indices = get_s2_indices()
+            #self.cloud_mask = 
+
+        if collection == "landsat-c2-l2":
+            self.indices = get_oli_indices()
+            #self.cloud_mask = 
+
+        [self.param.product.objects.append(i) for i in self.indices]
 
         client = Client.open(url)
         result = client.search(collections=[collection], bbox=bbox, datetime=dtime)
@@ -150,7 +146,7 @@ class MapManager(param.Parameterized):
 
     def _rgb_viewer(self):
         items = pystac.ItemCollection(self.items_dict["features"])
-
+        prod_select = self.param.product
         # Time variable
         time_var = [i.datetime for i in items]
         time_date = [t.date() for t in time_var]
@@ -168,11 +164,11 @@ class MapManager(param.Parameterized):
             plot_true_color_image,
             items=items,
             time=time_select,
-            mask_cl=True,
+            mask_cl=False,
             resolution=100
         )
 
-        return pn.Column(time_select, s2_true_color_bind)
+        return pn.Column(time_select, prod_select, s2_true_color_bind)
 
 
 map_mgr = MapManager()
