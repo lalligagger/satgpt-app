@@ -32,7 +32,7 @@ class MapManager(param.Parameterized):
 
     ## Basic view
     media = None
-    data = None
+    data = None # TODO: data should be loaded as reflectance for Landsat or Sentinel
     product = param.Selector(['RGB'])
     mask_clouds = param.Boolean()
     mask = None
@@ -66,10 +66,12 @@ class MapManager(param.Parameterized):
 
         if collection == "sentinel-2-l2a":
             self.indices = get_s2_indices()
+            #self.data = 
             #self.cloud_mask = 
 
         if collection == "landsat-c2-l2":
             self.indices = get_oli_indices()
+            #self.data = 
             #self.cloud_mask = 
 
         [self.param.product.objects.append(i) for i in self.indices]
@@ -85,7 +87,6 @@ class MapManager(param.Parameterized):
             "count": result.matched(),
         }
 
-    # TODO: switch to holoviews? or ok for demo?
     def view_footprints(
         self,
     ):
@@ -95,7 +96,7 @@ class MapManager(param.Parameterized):
             self.gdf.loc[:, ["geometry"]]
             .set_crs("epsg:4326")
             .explore(tiles="CartoDB positron")
-        )  # TODO: could use basemap, have optional tooltips, etc.
+        )
 
         self.media = pn.pane.plot.Folium(m, height=400)
         return "Map is loaded to chat. Return nothing but a text confirmation to let the user know."
@@ -139,11 +140,10 @@ class MapManager(param.Parameterized):
     def show_datacube(self):
         """Display the image viewer for the current items (images). Currently only supports RGB views, no spectral indices."""
 
-        rgb = self.__viewer()
+        rgb = self._viewer()
         self.media = pn.panel(rgb)
 
         return "Images are loaded to chat. Return nothing other than 'Done!' to the user."
-
 
     # def _load_data(self):
     #     raw_data = stac_load(
@@ -154,7 +154,7 @@ class MapManager(param.Parameterized):
     #         crs="EPSG:3857"
     #         ).isel(time=0).to_array(dim="band")
 
-    def __viewer(self):
+    def _viewer(self):
         items = pystac.ItemCollection(self.items_dict["features"])
         prod_select = self.param.product
         mask_select = self.param.mask_clouds
@@ -173,9 +173,11 @@ class MapManager(param.Parameterized):
             description="Select the date for plotting.",
         )
 
+        # update_data_bind = pn.bind(self._load_data ... ) ?
+
         s2_true_color_bind = pn.bind(
             plot_true_color_image,
-            items=items,
+            items=items, # TODO: switch to data
             time=time_select,
             mask_cl=mask_select,
             resolution=250,

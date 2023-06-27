@@ -38,19 +38,13 @@ def plot_true_color_image(items, time, resolution, mask_cl, range):
 
     print(f"loading data & generating RGB plot for {str(time)}")
 
-    # TODO: add time downselection
     sel_item = [it for it in items if it.datetime.date() == time]
-
-    # aws_session = AWSSession(requester_pays=True)
-    # with rio.Env(aws_session):
 
     print("loading delayed data")
 
-    rgb_bands = ["red", "green", "blue"]
-
     s2_data = stac_load(
         sel_item,
-        # bands=rgb_bands,# + ["scl"],
+        # bands=rgb_bands,# + ["scl"], # TODO: does this matter w/ delayed?
         resolution=resolution,
         chunks={'time': 1, 'x': 2048, 'y': 2048},
         crs='EPSG:3857',
