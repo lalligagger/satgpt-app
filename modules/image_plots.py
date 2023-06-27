@@ -14,7 +14,7 @@ rasterize.expand = False
 
 OSM_TILES = hv.element.tiles.OSM()
 
-def plot_true_color_image(items, time, resolution, mask_cl, range):
+def plot_true_color_image(raw_data, time_event, mask_cl, range):
     """
     A function that plots the True Color band combination.
     """
@@ -36,44 +36,33 @@ def plot_true_color_image(items, time, resolution, mask_cl, range):
                 tool.zoom_on_axis = False
                 break
 
-    print(f"loading data & generating RGB plot for {str(time)}")
-
-    sel_item = [it for it in items if it.datetime.date() == time]
-
-    print("loading delayed data")
-
-    s2_data = stac_load(
-        sel_item,
-        # bands=rgb_bands,# + ["scl"], # TODO: does this matter w/ delayed?
-        resolution=resolution,
-        chunks={'time': 1, 'x': 2048, 'y': 2048},
-        crs='EPSG:3857',
-        ).isel(time=0).to_array(dim="band")
-
-    # RGB data
-    rgb_data = s2_data.sel(band=rgb_bands)
-
-    # Convert to reflectance
-    rgb_data = s2_dn_to_reflectance(rgb_data)
-
-    # Contrast stretching
-    rgb_data = s2_contrast_stretch(rgb_data, range)
+    # # RGB data
+    rgb_data = raw_data.sel(time=time_event, method="nearest")#.sel(band=rgb_bands)
 
     # Mask the clouds
-    # TODO: Clean up try/ except
     if mask_cl:
-        try:
-            cl_data = s2_data.sel(band=["scl"])
-        except:
-            qa_data = s2_data.sel(band=["qa_pixel"])
-            # Make a bitmask---when we bitwise-and it with the data, it leaves just the 4 bits we care about
-            mask_bitfields = [1, 2, 3, 4]  # dilated cloud, cirrus, cloud, cloud shadow
-            bitmask = 0
-            for field in mask_bitfields:
-                bitmask |= 1 << field
-            cl_data = qa_data & bitmask
+        cl_data = rgb_data.sel(band=["scl"])
 
-        rgb_data = mask_clouds(rgb_data, cl_data)
+    # # TODO: Clean up try/ (bare) except
+    # if mask_cl:
+    #     try:
+    #         cl_data = rgb_data.sel(band=["scl"])
+    #     except:
+    #         qa_data = rgb_data.sel(band=["qa_pixel"])
+    #         # Make a bitmask---when we bitwise-and it with the data, it leaves just the 4 bits we care about
+    #         mask_bitfields = [1, 2, 3, 4]  # dilated cloud, cirrus, cloud, cloud shadow
+    #         bitmask = 0
+    #         for field in mask_bitfields:
+    #             bitmask |= 1 << field
+    #         cl_data = qa_data & bitmask
+
+    #     rgb_data = mask_clouds(rgb_data, cl_data)
+
+    # # Convert to reflectance
+    # rgb_data = s2_dn_to_reflectance(rgb_data)
+
+    # # Contrast stretching
+    rgb_data = s2_contrast_stretch(rgb_data, range)
 
     rgb_plot = rgb_data.hvplot.rgb(
         title="",
@@ -128,9 +117,6 @@ def plot_s2_spindex(items, time, s2_spindex, resolution, cmap, mask_cl):
 
     # Get the selected image
     sel_item = [it for it in items if it.datetime.date() == time]
-
-    # aws_session = AWSSession(requester_pays=True)
-    # with rio.Env(aws_session):
 
     print("loading delayed data")
 

@@ -14,7 +14,7 @@ from langchain.tools import StructuredTool
 
 from modules.spyndex_utils import get_oli_indices, get_s2_indices
 from modules.image_plots import plot_true_color_image
-from modules.image_processing import s2_contrast_stretch, s2_image_to_uint8
+from modules.image_processing import s2_contrast_stretch, s2_image_to_uint8, s2_dn_to_reflectance
 
 
 class MapManager(param.Parameterized):
@@ -32,7 +32,7 @@ class MapManager(param.Parameterized):
 
     ## Basic view
     media = None
-    data = None # TODO: data should be loaded as reflectance for Landsat or Sentinel
+    data = None
     product = param.Selector(['RGB'])
     mask_clouds = param.Boolean()
     mask = None
@@ -145,14 +145,30 @@ class MapManager(param.Parameterized):
 
         return "Images are loaded to chat. Return nothing other than 'Done!' to the user."
 
-    # def _load_data(self):
-    #     raw_data = stac_load(
-    #         sel_item,
-    #         bands=index_bands,
-    #         resolution=resolution,
-    #         chunks={'time': 1, 'x': 2048, 'y': 2048},
-    #         crs="EPSG:3857"
-    #         ).isel(time=0).to_array(dim="band")
+    def _load_data(self, time, resolution):
+
+        print(f"loading data for {str(time)}")
+        items = pystac.ItemCollection(self.items_dict["features"])
+        # sel_item = [it for it in items if it.datetime.date() == time]
+
+        if self.collection=="sentinel-2-l2a":
+            rgb_bands = ["red", "green", "blue", "scl"]
+    
+        if self.collection=="landsat-c2-l2":
+            rgb_bands = ["red", "green", "blue", "qa_pixel"]
+
+        raw_data = stac_load(
+            items,
+            bands=rgb_bands,
+            resolution=resolution,
+            chunks={'time': 1, 'x': 2048, 'y': 2048},
+            crs="EPSG:3857"
+            ).to_array(dim="band")
+
+        # Convert to reflectance
+        rgb_data = s2_dn_to_reflectance(raw_data)
+
+        self.data=rgb_data
 
     def _viewer(self):
         items = pystac.ItemCollection(self.items_dict["features"])
@@ -173,14 +189,17 @@ class MapManager(param.Parameterized):
             description="Select the date for plotting.",
         )
 
-        # update_data_bind = pn.bind(self._load_data ... ) ?
+        # initializes the data
+        self._load_data(
+            time=time_date[0],
+            resolution=250,
+        )
 
         s2_true_color_bind = pn.bind(
             plot_true_color_image,
-            items=items, # TODO: switch to data
-            time=time_select,
+            raw_data=self.data,
+            time_event=time_select,
             mask_cl=mask_select,
-            resolution=250,
             range=clip_select
         )
 
