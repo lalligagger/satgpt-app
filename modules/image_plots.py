@@ -14,8 +14,7 @@ rasterize.expand = False
 
 OSM_TILES = hv.element.tiles.OSM()
 
-#TODO: Switch items -> item(?)
-def plot_true_color_image(items, time, resolution, mask_cl):
+def plot_true_color_image(items, time, resolution, mask_cl, range):
     """
     A function that plots the True Color band combination.
     """
@@ -65,7 +64,7 @@ def plot_true_color_image(items, time, resolution, mask_cl):
     rgb_data = s2_dn_to_reflectance(rgb_data)
 
     # Contrast stretching
-    rgb_data = s2_contrast_stretch(rgb_data)
+    rgb_data = s2_contrast_stretch(rgb_data, range)
 
     # Mask the clouds
     if mask_cl:

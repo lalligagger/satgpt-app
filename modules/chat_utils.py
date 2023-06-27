@@ -40,7 +40,7 @@ class MapManager(param.Parameterized):
     # selected_date(s) =
     tile_url = param.String("https://tile.openstreetmap.org/{Z}/{X}/{Y}.png")
     # map_bounds =
-    clip_range = param.Tuple((0.05,0.95))
+    clip_range = param.Range((5,95))
     # cmap =  # (if not RGB)
 
     ## Split view
@@ -158,6 +158,7 @@ class MapManager(param.Parameterized):
         items = pystac.ItemCollection(self.items_dict["features"])
         prod_select = self.param.product
         mask_select = self.param.mask_clouds
+        clip_select = self.param.clip_range
 
         # Time variable
         time_var = [i.datetime for i in items]
@@ -176,11 +177,12 @@ class MapManager(param.Parameterized):
             plot_true_color_image,
             items=items,
             time=time_select,
-            mask_cl=self.mask_clouds,
-            resolution=100
+            mask_cl=mask_select,
+            resolution=100,
+            range=clip_select
         )
 
-        return pn.Column(time_select, prod_select, mask_select, s2_true_color_bind)
+        return pn.Column(time_select, prod_select, clip_select, mask_select, s2_true_color_bind)
 
 
 map_mgr = MapManager()

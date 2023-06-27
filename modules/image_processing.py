@@ -28,14 +28,14 @@ def s2_image_to_uint8(in_data):
 
     return out_data
     
-def s2_contrast_stretch(in_data):
+def s2_contrast_stretch(in_data, range=(2.5,97.5)):
     """
     Image enhancement: Contrast stretching.
     """
 
-    p2, p98 = np.percentile(in_data, (2.5, 97.5))
-    in_data.values = exposure.rescale_intensity(in_data, in_range=(p2, p98))
-    print(f"scaling to range {p2} : {p98}")
+    pmin, pmax = np.percentile(in_data, range)
+    in_data.values = exposure.rescale_intensity(in_data, in_range=(pmin, pmax))
+    print(f"scaling to range {pmin} : {pmax}")
 
     return in_data
 
