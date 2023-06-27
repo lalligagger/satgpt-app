@@ -159,6 +159,7 @@ class MapManager(param.Parameterized):
 
         raw_data = stac_load(
             items,
+            bbox= tuple(map(float, self.bbox.split(','))),
             bands=rgb_bands,
             resolution=resolution,
             chunks={'time': 1, 'x': 2048, 'y': 2048},
