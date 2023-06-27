@@ -14,7 +14,7 @@ rasterize.expand = False
 
 OSM_TILES = hv.element.tiles.OSM()
 
-
+#TODO: Switch items -> item(?)
 def plot_true_color_image(items, time, resolution, mask_cl):
     """
     A function that plots the True Color band combination.

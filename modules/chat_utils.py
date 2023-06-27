@@ -6,10 +6,10 @@ from typing import Optional
 import panel as pn
 import param
 from pystac_client.client import Client
+from odc.stac import stac_load
 import geopandas as gpd
 import pystac
 import rasterio
-from rioxarray.merge import merge_arrays
 from langchain.tools import StructuredTool
 
 from modules.spyndex_utils import get_oli_indices, get_s2_indices
@@ -33,14 +33,14 @@ class MapManager(param.Parameterized):
 
     ## Basic view
     media = None
-    # datacube =
+    data = None
     product = param.Selector(['RGB'])
+    mask_clouds = param.Boolean()
     # available_dates =
     # selected_date(s) =
     tile_url = param.String("https://tile.openstreetmap.org/{Z}/{X}/{Y}.png")
     # map_bounds =
-    # mask_clouds =
-    # clip_range =
+    clip_range = param.Tuple((0.05,0.95))
     # cmap =  # (if not RGB)
 
     ## Split view
@@ -137,16 +137,28 @@ class MapManager(param.Parameterized):
         return "Basemap is set. Return nothing but a text confirmation to let the user know."
 
     def show_datacube(self):
-        """Display the datacube viewer for the current items (images). Currently only supports RGB views, no spectral indices."""
+        """Display the image viewer for the current items (images). Currently only supports RGB views, no spectral indices."""
 
-        rgb = self._rgb_viewer()
+        rgb = self.__viewer()
         self.media = pn.panel(rgb)
 
-        return "Datacube is loaded to chat. Return nothing other than 'Done!' to the user."
+        return "Images are loaded to chat. Return nothing other than 'Done!' to the user."
 
-    def _rgb_viewer(self):
+
+    # def _load_data(self):
+    #     raw_data = stac_load(
+    #         sel_item,
+    #         bands=index_bands,
+    #         resolution=resolution,
+    #         chunks={'time': 1, 'x': 2048, 'y': 2048},
+    #         crs="EPSG:3857"
+    #         ).isel(time=0).to_array(dim="band")
+
+    def __viewer(self):
         items = pystac.ItemCollection(self.items_dict["features"])
         prod_select = self.param.product
+        mask_select = self.param.mask_clouds
+
         # Time variable
         time_var = [i.datetime for i in items]
         time_date = [t.date() for t in time_var]
@@ -164,11 +176,11 @@ class MapManager(param.Parameterized):
             plot_true_color_image,
             items=items,
             time=time_select,
-            mask_cl=False,
+            mask_cl=self.mask_clouds,
             resolution=100
         )
 
-        return pn.Column(time_select, prod_select, s2_true_color_bind)
+        return pn.Column(time_select, prod_select, mask_select, s2_true_color_bind)
 
 
 map_mgr = MapManager()
