@@ -14,15 +14,28 @@ def s2_dn_to_reflectance(in_data):
 
     return in_data
 
+def s2_image_to_uint8(in_data):
+    """
+    A function that converts image DN to Reflectance (0, 1) and
+    then rescale to uint8 (0-255).
+    https://docs.sentinel-hub.com/api/latest/data/sentinel-2-l1c/
+    """
 
-def s2_contrast_stretch(in_data):
+    # Convert to reflectance and uint8 (range: 0-255)
+    # quant_value = 1e4
+    out_data = (in_data / in_data.max() * 255).astype("uint8")
+    out_data = out_data.clip(0, 255)
+
+    return out_data
+    
+def s2_contrast_stretch(in_data, range=(2.5,97.5)):
     """
     Image enhancement: Contrast stretching.
     """
 
-    p2, p98 = np.percentile(in_data, (2.5, 97.5))
-    in_data.values = exposure.rescale_intensity(in_data, in_range=(p2, p98))
-    print(f"scaling to range {p2} : {p98}")
+    pmin, pmax = np.percentile(in_data, range)
+    in_data.values = exposure.rescale_intensity(in_data, in_range=(pmin, pmax))
+    print(f"scaling to range {pmin} : {pmax}")
 
     return in_data
 
