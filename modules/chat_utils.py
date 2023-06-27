@@ -18,7 +18,6 @@ from modules.image_processing import s2_contrast_stretch, s2_image_to_uint8
 
 
 class MapManager(param.Parameterized):
-    ## TODO: use another gdf for zonal stats - items get stored here for plotting
     gdf = param.DataFrame(
         # gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
         # columns=['geometry']
@@ -179,7 +178,7 @@ class MapManager(param.Parameterized):
             items=items,
             time=time_select,
             mask_cl=mask_select,
-            resolution=100,
+            resolution=250,
             range=clip_select
         )
 

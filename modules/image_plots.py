@@ -48,7 +48,6 @@ def plot_true_color_image(items, time, resolution, mask_cl, range):
 
     rgb_bands = ["red", "green", "blue"]
 
-    # TODO: Add flag for S2 vs. Landsat cloud mask
     s2_data = stac_load(
         sel_item,
         # bands=rgb_bands,# + ["scl"],
@@ -67,9 +66,20 @@ def plot_true_color_image(items, time, resolution, mask_cl, range):
     rgb_data = s2_contrast_stretch(rgb_data, range)
 
     # Mask the clouds
+    # TODO: Clean up try/ except
     if mask_cl:
-        scl_data = s2_data.sel(band=["scl"])
-        rgb_data = mask_clouds(rgb_data, scl_data)
+        try:
+            cl_data = s2_data.sel(band=["scl"])
+        except:
+            qa_data = s2_data.sel(band=["qa_pixel"])
+            # Make a bitmask---when we bitwise-and it with the data, it leaves just the 4 bits we care about
+            mask_bitfields = [1, 2, 3, 4]  # dilated cloud, cirrus, cloud, cloud shadow
+            bitmask = 0
+            for field in mask_bitfields:
+                bitmask |= 1 << field
+            cl_data = qa_data & bitmask
+
+        rgb_data = mask_clouds(rgb_data, cl_data)
 
     rgb_plot = rgb_data.hvplot.rgb(
         title="",
