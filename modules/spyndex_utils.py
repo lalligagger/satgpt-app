@@ -88,6 +88,7 @@ def get_indices(collection):
             and application_domain != "kernel"
         ):
             indices.append(SPYNDEX_INDICES[spindex].short_name)
+    indices.sort()
     return indices
 
 

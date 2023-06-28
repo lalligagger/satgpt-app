@@ -32,6 +32,7 @@ class MapManager(param.Parameterized):
     media = None
     data = None
     mask_clouds = param.Boolean()
+    mask_clouds.precedence = -1  # Hide for now
     mask = None
     # available_dates =
     # selected_date(s) =
@@ -183,14 +184,9 @@ class MapManager(param.Parameterized):
             description="Select the date for plotting.",
         )
 
-        indices = ["RGB"] + get_indices(self.collection)
-        composite_select = pn.widgets.AutocompleteInput(
-            name='Composite',
-            restrict=True,
-            options=indices,
-            value='RGB',
-            description="Select the composite"
-            )
+        # TODO: Planning to add other composites
+        composites_indices = {"Composites": ["RGB"], "Indices": get_indices(self.collection)}
+        composite_select = pn.widgets.Select(name="Colormap", groups=composites_indices, value="RGB")
 
         range_select = pn.widgets.EditableRangeSlider(
             name='Image enhancement',
