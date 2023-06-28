@@ -186,7 +186,7 @@ class MapManager(param.Parameterized):
 
         # TODO: Planning to add other composites
         composites_indices = {"Composites": ["RGB"], "Indices": get_indices(self.collection)}
-        composite_select = pn.widgets.Select(name="Colormap", groups=composites_indices, value="RGB")
+        composite_select = pn.widgets.Select(name="Composites/Indices", groups=composites_indices, value="RGB")
 
         range_select = pn.widgets.EditableRangeSlider(
             name='Image enhancement',
