@@ -4,7 +4,7 @@ import hvplot.xarray  # noqa
 from rasterio.session import AWSSession
 from holoviews.operation.datashader import rasterize
 from modules.image_processing import s2_contrast_stretch, s2_dn_to_reflectance, mask_clouds
-from modules.spyndex_utils import compute_index, get_index_props
+from modules.spyndex_utils import compute_index, get_index_props, get_index_metadata
 
 hv.extension("bokeh")
 
@@ -75,7 +75,7 @@ def plot_rgb(raw_data, time_event, clip_range, mask_cl):
     return OSM_TILES * rgb_plot
 
 
-def plot_index(raw_data, time_event, collection, composite, mask_cl, cmap):
+def get_index_pane(raw_data, time_event, collection, composite, mask_cl, cmap):
     """
     A function that plots the selected Sentinel-2 spectral index.
     """
@@ -144,5 +144,7 @@ def plot_index(raw_data, time_event, collection, composite, mask_cl, cmap):
         tools=[spindex_hover],
         ).opts(hooks=[hook])
 
+    meta_pane = get_index_metadata(index_props)
+
     print("finished plotting")
-    return OSM_TILES * index_plot.redim.nodata(value=0)
+    return (OSM_TILES * index_plot.redim.nodata(value=0), meta_pane)

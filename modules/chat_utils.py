@@ -11,7 +11,7 @@ import pystac
 from langchain.tools import StructuredTool
 from modules.spyndex_utils import BAND_MAPPING
 from modules.spyndex_utils import get_indices
-from modules.image_plots import plot_rgb, plot_index
+from modules.datacube_utils import plot_rgb, get_index_pane
 from modules.cmap_utils import get_cmap_options, get_cmap_plot
 
 
@@ -150,22 +150,26 @@ class MapManager(param.Parameterized):
         self.data = raw_data
 
     def _viewer(self):
-        def switch_layer(raw_data, collection, composite, time_event, clip_range, mask_cl, cmap):
+        def switch_layer(raw_data, collection, comp_index, time_event, clip_range, mask_cl, cmap):
             """
-            A function that plots the selected composite.
+            # TODO: Simplify
+            A function that plots the selected composite or index.
             """
-            if composite == "RGB":
+
+            if comp_index == "RGB":
                 lyr_plot = plot_rgb(raw_data, time_event, clip_range, mask_cl)
                 cmap_select.disabled = True
                 cmap_view.disabled = True
                 range_select.disabled = False
+                print("finished plotting")
+                return lyr_plot
             else:
-                lyr_plot = plot_index(raw_data, time_event, collection, composite, mask_cl, cmap)
+                lyr_plot, meta_pane = get_index_pane(raw_data, time_event, collection, comp_index, mask_cl, cmap)
                 cmap_select.disabled = False
                 cmap_view.disabled = False
                 range_select.disabled = True
-            print("finished plotting")
-            return lyr_plot
+                print("finished plotting")
+                return pn.Tabs(("Map", lyr_plot), ("Metadata", meta_pane))
 
         items = pystac.ItemCollection(self.items_dict["features"])
         mask_select = self.param.mask_clouds
@@ -184,9 +188,9 @@ class MapManager(param.Parameterized):
             description="Select the date for plotting.",
         )
 
-        # TODO: Planning to add other composites
-        composites_indices = {"Composites": ["RGB"], "Indices": get_indices(self.collection)}
-        composite_select = pn.widgets.Select(name="Composites/Indices", groups=composites_indices, value="RGB")
+        # TODO: Planning to add more composites
+        comp_index = {"Composites": ["RGB"], "Indices": get_indices(self.collection)}
+        comp_index_select = pn.widgets.Select(name="Composites/Indices", groups=comp_index, value="RGB")
 
         range_select = pn.widgets.EditableRangeSlider(
             name='Image enhancement',
@@ -212,7 +216,7 @@ class MapManager(param.Parameterized):
             switch_layer,
             raw_data=self.data,
             collection=self.collection,
-            composite=composite_select,
+            comp_index=comp_index_select,
             time_event=time_select,
             clip_range=range_select,
             mask_cl=mask_select,
@@ -222,7 +226,7 @@ class MapManager(param.Parameterized):
         wbox = pn.WidgetBox(
             '',
             time_select,
-            composite_select,
+            comp_index_select,
             range_select,
             mask_select,
             cmap_select,

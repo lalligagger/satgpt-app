@@ -1,6 +1,5 @@
 import spyndex
 import panel as pn
-from modules.constants import FLOATPANEL_CONFIGS
 
 BAND_MAPPING = {
     "sentinel-2-l2a": {
@@ -108,16 +107,16 @@ def get_index_props(spindex, collection):
     }
 
 
-def compute_index(in_data, spindex):
+def compute_index(in_data, spindex_props):
     """
     Calculate the selected spectral index given a list of params (bands, constants).
     """
 
     out_params = {}
-    index_name = spindex["short_name"]
-    stac_bands = spindex["stac_bands"]
-    index_bands = spindex["index_bands"]
-    constants = spindex["constants"]
+    index_name = spindex_props["short_name"]
+    stac_bands = spindex_props["stac_bands"]
+    index_bands = spindex_props["index_bands"]
+    constants = spindex_props["constants"]
 
     for idx, index_band in enumerate(index_bands):
         out_params[index_band] = in_data.sel(band=stac_bands[idx])
@@ -128,12 +127,12 @@ def compute_index(in_data, spindex):
     return spyndex.computeIndex(index=[index_name], params=out_params)
 
 
-def get_index_metadata():
-    spindex = pn.state.cache["index"]["meta"]
-    short_name = spindex["short_name"]
+def get_index_metadata(spindex):
+
     long_name = spindex["long_name"]
     bands = ", ".join(spindex["stac_bands"]).upper()
     # constants = spindex["constants"]
+    application_domain = spindex["application_domain"]
     contributor = spindex["contributor"]
     formula = spindex["formula"]  # TODO: Formula in latex
     reference = spindex["reference"]
@@ -142,6 +141,9 @@ def get_index_metadata():
 
     **Long name**  
     {long_name}
+
+    **Application domain**  
+    {application_domain}
 
     **Bands**  
     {bands}
@@ -157,13 +159,4 @@ def get_index_metadata():
 
     """
 
-    spyndex_pane = pn.layout.FloatPanel(
-        pn.pane.Markdown(markdown),
-        name=f"{short_name}",
-        contained=False,
-        position="center",
-        margin=20,
-        config=FLOATPANEL_CONFIGS,
-    )
-
-    return spyndex_pane
+    return pn.Row(pn.pane.Markdown(markdown, align="center"))
