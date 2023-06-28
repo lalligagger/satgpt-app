@@ -14,7 +14,6 @@ from modules.spyndex_utils import get_indices
 from modules.datacube_utils import plot_rgb, get_index_pane
 from modules.cmap_utils import get_cmap_options, get_cmap_plot
 
-
 class MapManager(param.Parameterized):
     gdf = param.DataFrame(
         # gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
@@ -152,24 +151,22 @@ class MapManager(param.Parameterized):
     def _viewer(self):
         def switch_layer(raw_data, collection, comp_index, time_event, clip_range, mask_cl, cmap):
             """
-            # TODO: Simplify
+            # TODO: Simplify, Add more composites
             A function that plots the selected composite or index.
             """
 
             if comp_index == "RGB":
-                lyr_plot = plot_rgb(raw_data, time_event, clip_range, mask_cl)
+                map_pane = plot_rgb(raw_data, time_event, clip_range, mask_cl)
                 cmap_select.disabled = True
                 cmap_view.disabled = True
                 range_select.disabled = False
-                print("finished plotting")
-                return lyr_plot
             else:
-                lyr_plot, meta_pane = get_index_pane(raw_data, time_event, collection, comp_index, mask_cl, cmap)
+                map_pane = get_index_pane(raw_data, time_event, collection, comp_index, mask_cl, cmap)
                 cmap_select.disabled = False
                 cmap_view.disabled = False
                 range_select.disabled = True
-                print("finished plotting")
-                return pn.Tabs(("Map", lyr_plot), ("Metadata", meta_pane))
+            print("finished plotting")
+            return map_pane
 
         items = pystac.ItemCollection(self.items_dict["features"])
         mask_select = self.param.mask_clouds

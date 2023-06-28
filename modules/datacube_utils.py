@@ -1,10 +1,12 @@
 import holoviews as hv
+import panel as pn
 from bokeh.models import HoverTool, WheelZoomTool
 import hvplot.xarray  # noqa
 from rasterio.session import AWSSession
 from holoviews.operation.datashader import rasterize
 from modules.image_processing import s2_contrast_stretch, s2_dn_to_reflectance, mask_clouds
 from modules.spyndex_utils import compute_index, get_index_props, get_index_metadata
+from modules.image_statistics import plot_spindex_kde
 
 hv.extension("bokeh")
 
@@ -66,8 +68,8 @@ def plot_rgb(raw_data, time_event, clip_range, mask_cl):
         y="y",
         rasterize=True,
         bands='band',
-        frame_height=500,
         frame_width=500,
+        frame_height=500,
         xaxis=None,
         yaxis=None,
         hover=False
@@ -144,7 +146,12 @@ def get_index_pane(raw_data, time_event, collection, composite, mask_cl, cmap):
         tools=[spindex_hover],
         ).opts(hooks=[hook])
 
+    lyr_plot = OSM_TILES * index_plot.redim.nodata(value=0)
+
     meta_pane = get_index_metadata(index_props)
 
-    print("finished plotting")
-    return (OSM_TILES * index_plot.redim.nodata(value=0), meta_pane)
+    kde_plot = plot_spindex_kde(index_name, index_data)
+
+    index_pane = pn.Tabs(("Map", lyr_plot), ("Density plot", kde_plot), ("Metadata", meta_pane))
+
+    return index_pane

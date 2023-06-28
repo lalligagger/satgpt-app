@@ -132,7 +132,7 @@ def get_index_metadata(spindex):
     long_name = spindex["long_name"]
     bands = ", ".join(spindex["stac_bands"]).upper()
     # constants = spindex["constants"]
-    application_domain = spindex["application_domain"]
+    application_domain = spindex["application_domain"].capitalize()
     contributor = spindex["contributor"]
     formula = spindex["formula"]  # TODO: Formula in latex
     reference = spindex["reference"]
