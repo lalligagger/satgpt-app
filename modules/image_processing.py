@@ -14,6 +14,7 @@ def s2_dn_to_reflectance(in_data):
 
     return in_data
 
+
 def s2_image_to_uint8(in_data):
     """
     A function that converts image DN to Reflectance (0, 1) and
@@ -27,13 +28,14 @@ def s2_image_to_uint8(in_data):
     out_data = out_data.clip(0, 255)
 
     return out_data
-    
-def s2_contrast_stretch(in_data, range=(2.5,97.5)):
+
+
+def s2_contrast_stretch(in_data, clip_range=(2.5, 97.5)):
     """
     Image enhancement: Contrast stretching.
     """
 
-    pmin, pmax = np.percentile(in_data, range)
+    pmin, pmax = np.percentile(in_data, clip_range)
     in_data.values = exposure.rescale_intensity(in_data, in_range=(pmin, pmax))
     print(f"scaling to range {pmin} : {pmax}")
 

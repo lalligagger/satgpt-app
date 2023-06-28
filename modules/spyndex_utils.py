@@ -3,32 +3,34 @@ import panel as pn
 from modules.constants import FLOATPANEL_CONFIGS
 
 BAND_MAPPING = {
-    "A": "coastal",
-    "B": "blue",
-    "G": "green",
-    "R": "red",
-    "RE1": "rededge1",
-    "RE2": "rededge2",
-    "RE3": "rededge3",
-    "N": "nir",
-    "N2": "nir08",
-    "S1": "swir16",
-    "S2": "swir22",
+    "sentinel-2-l2a": {
+        "A": "coastal",
+        "B": "blue",
+        "G": "green",
+        "R": "red",
+        "RE1": "rededge1",
+        "RE2": "rededge2",
+        "RE3": "rededge3",
+        "N": "nir",
+        "N2": "nir08",
+        "WV": "wvp",
+        "S1": "swir16",
+        "S2": "swir22",
+        "999": "scl",
+    },
+    "landsat-c2-l2": {
+        "A": "coastal",
+        "B": "blue",
+        "G": "green",
+        "R": "red",
+        "N": "nir08",
+        "S1": "swir16",
+        "S2": "swir22",
+        "999": "qa_pixel",
+    },
 }
 
-LANDSAT_BAND_MAPPING = {  # We can drop this dictionary
-    "A": "coastal",
-    "B": "blue",
-    "G": "green",
-    "R": "red",
-    # "RE1": "rededge1",
-    # "RE2": "rededge2",
-    # "RE3": "rededge3",
-    "N": "nir08",
-    # "N2": "nir08", 
-    "S1": "swir16",
-    "S2": "swir22",
-}
+COLLECTION_MAPPING = {"landsat-c2-l2": "Landsat-OLI", "sentinel-2-l2a": "Sentinel-2"}
 
 # Constants
 SPYNDEX_CONSTANTS = spyndex.constants
@@ -37,14 +39,14 @@ SPYNDEX_CONSTANTS = spyndex.constants
 SPYNDEX_INDICES = spyndex.indices
 
 
-def to_stac_bands(spindex):
+def to_stac_bands(spindex, collection):
     """
     Get the list of bands for the selected index according to stac
     naming conventions
     """
 
     return [
-        BAND_MAPPING[b]
+        BAND_MAPPING[collection][b]
         for b in SPYNDEX_INDICES[spindex].bands
         if b not in SPYNDEX_CONSTANTS
     ]
@@ -74,31 +76,22 @@ def get_index_constants(spindex):
     return None
 
 
-def get_oli_indices():
-    """Create a list with all available landsat indices"""
-
-    oli_indices = []
-    for spindex in SPYNDEX_INDICES:
-        application_domain = SPYNDEX_INDICES[spindex].application_domain
-        platforms = SPYNDEX_INDICES[spindex].platforms
-        if "Landsat-OLI" in platforms and application_domain != "kernel":
-            oli_indices.append(SPYNDEX_INDICES[spindex].short_name)
-    return oli_indices
-
-
-def get_s2_indices():
+def get_indices(collection):
     """Create a list with all available sentinel-2 indices"""
 
-    s2_indices = []
+    indices = []
     for spindex in SPYNDEX_INDICES:
         application_domain = SPYNDEX_INDICES[spindex].application_domain
         platforms = SPYNDEX_INDICES[spindex].platforms
-        if "Sentinel-2" in platforms and application_domain != "kernel":
-            s2_indices.append(SPYNDEX_INDICES[spindex].short_name)
-    return s2_indices
+        if (
+            COLLECTION_MAPPING[collection] in platforms
+            and application_domain != "kernel"
+        ):
+            indices.append(SPYNDEX_INDICES[spindex].short_name)
+    return indices
 
 
-def get_index_props(spindex):
+def get_index_props(spindex, collection):
     """Create a dictionary with some properties of the selected index"""
 
     return {
@@ -106,7 +99,7 @@ def get_index_props(spindex):
         "long_name": SPYNDEX_INDICES[spindex].long_name,
         "application_domain": SPYNDEX_INDICES[spindex].application_domain,
         "index_bands": get_index_bands(spindex),
-        "stac_bands": to_stac_bands(spindex),
+        "stac_bands": to_stac_bands(spindex, collection),
         "constants": get_index_constants(spindex),
         "formula": SPYNDEX_INDICES[spindex].formula,
         "reference": SPYNDEX_INDICES[spindex].reference,

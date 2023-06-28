@@ -1,7 +1,6 @@
 from datetime import datetime
 import holoviews as hv
 import hvplot.xarray
-from holoviews.operation.datashader import rasterize
 from typing import Optional
 import panel as pn
 import param
@@ -9,12 +8,11 @@ from pystac_client.client import Client
 from odc.stac import stac_load
 import geopandas as gpd
 import pystac
-import rasterio
 from langchain.tools import StructuredTool
-
-from modules.spyndex_utils import get_oli_indices, get_s2_indices
-from modules.image_plots import plot_true_color_image
-from modules.image_processing import s2_contrast_stretch, s2_image_to_uint8, s2_dn_to_reflectance
+from modules.spyndex_utils import BAND_MAPPING
+from modules.spyndex_utils import get_indices
+from modules.image_plots import plot_rgb, plot_index
+from modules.cmap_utils import get_cmap_options, get_cmap_plot
 
 
 class MapManager(param.Parameterized):
@@ -33,14 +31,13 @@ class MapManager(param.Parameterized):
     ## Basic view
     media = None
     data = None
-    product = param.Selector(['RGB'])
     mask_clouds = param.Boolean()
     mask = None
     # available_dates =
     # selected_date(s) =
     tile_url = param.String("https://tile.openstreetmap.org/{Z}/{X}/{Y}.png")
     # map_bounds =
-    clip_range = param.Range((5,95))
+    # clip_range = param.Range((5,95))
     # cmap =  # (if not RGB)
 
     ## Split view
@@ -63,18 +60,6 @@ class MapManager(param.Parameterized):
 
         self.bbox = bbox  # TODO: change to tuple?
         self.collection = collection
-
-        if collection == "sentinel-2-l2a":
-            self.indices = get_s2_indices()
-            #self.data = 
-            #self.cloud_mask = 
-
-        if collection == "landsat-c2-l2":
-            self.indices = get_oli_indices()
-            #self.data = 
-            #self.cloud_mask = 
-
-        [self.param.product.objects.append(i) for i in self.indices]
 
         client = Client.open(url)
         result = client.search(collections=[collection], bbox=bbox, datetime=dtime)
@@ -149,33 +134,41 @@ class MapManager(param.Parameterized):
 
         print(f"loading data for {str(time)}")
         items = pystac.ItemCollection(self.items_dict["features"])
-        # sel_item = [it for it in items if it.datetime.date() == time]
 
-        if self.collection=="sentinel-2-l2a":
-            rgb_bands = ["red", "green", "blue", "scl"]
-    
-        if self.collection=="landsat-c2-l2":
-            rgb_bands = ["red", "green", "blue", "qa_pixel"]
+        bands = list(BAND_MAPPING[self.collection].values())
 
         raw_data = stac_load(
             items,
-            bbox= tuple(map(float, self.bbox.split(','))),
-            bands=rgb_bands,
+            bbox=tuple(map(float, self.bbox.split(','))),
+            bands=bands,
             resolution=resolution,
             chunks={'time': 1, 'x': 2048, 'y': 2048},
             crs="EPSG:3857"
             ).to_array(dim="band")
 
-        # Convert to reflectance
-        rgb_data = s2_dn_to_reflectance(raw_data)
-
-        self.data=rgb_data
+        self.data = raw_data
 
     def _viewer(self):
+        def switch_layer(raw_data, collection, composite, time_event, clip_range, mask_cl, cmap):
+            """
+            A function that plots the selected composite.
+            """
+            if composite == "RGB":
+                lyr_plot = plot_rgb(raw_data, time_event, clip_range, mask_cl)
+                cmap_select.disabled = True
+                cmap_view.disabled = True
+                range_select.disabled = False
+            else:
+                lyr_plot = plot_index(raw_data, time_event, collection, composite, mask_cl, cmap)
+                cmap_select.disabled = False
+                cmap_view.disabled = False
+                range_select.disabled = True
+            print("finished plotting")
+            return lyr_plot
+
         items = pystac.ItemCollection(self.items_dict["features"])
-        prod_select = self.param.product
         mask_select = self.param.mask_clouds
-        clip_select = self.param.clip_range
+        # clip_select = self.param.clip_range
 
         # Time variable
         time_var = [i.datetime for i in items]
@@ -190,6 +183,29 @@ class MapManager(param.Parameterized):
             description="Select the date for plotting.",
         )
 
+        indices = ["RGB"] + get_indices(self.collection)
+        composite_select = pn.widgets.AutocompleteInput(
+            name='Composite',
+            restrict=True,
+            options=indices,
+            value='RGB',
+            description="Select the composite"
+            )
+
+        range_select = pn.widgets.EditableRangeSlider(
+            name='Image enhancement',
+            start=1, end=100,
+            value=(2.5, 97.5),
+            step=0.5
+            )
+
+        # Colormap select
+        # TODO: Add an option to revert the colormap
+        cmap_select = pn.widgets.Select(name="Colormap", groups=get_cmap_options(), value="RdYlGn")
+        cmap_view = pn.bind(get_cmap_plot, cmap=cmap_select)
+        cmap_select.disabled = True
+        cmap_view.disabled = True
+
         # initializes the data
         self._load_data(
             time=time_date[0],
@@ -197,14 +213,27 @@ class MapManager(param.Parameterized):
         )
 
         s2_true_color_bind = pn.bind(
-            plot_true_color_image,
+            switch_layer,
             raw_data=self.data,
+            collection=self.collection,
+            composite=composite_select,
             time_event=time_select,
+            clip_range=range_select,
             mask_cl=mask_select,
-            range=clip_select
+            cmap=cmap_select,
         )
 
-        return pn.Column(time_select, prod_select, clip_select, mask_select, s2_true_color_bind)
+        wbox = pn.WidgetBox(
+            '',
+            time_select,
+            composite_select,
+            range_select,
+            mask_select,
+            cmap_select,
+            cmap_view,
+            )
+
+        return pn.Row(wbox, s2_true_color_bind)
 
 
 map_mgr = MapManager()

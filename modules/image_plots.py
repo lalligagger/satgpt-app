@@ -1,7 +1,5 @@
 import holoviews as hv
-import panel as pn
 from bokeh.models import HoverTool, WheelZoomTool
-from odc.stac import stac_load
 import hvplot.xarray  # noqa
 from rasterio.session import AWSSession
 from holoviews.operation.datashader import rasterize
@@ -12,13 +10,11 @@ hv.extension("bokeh")
 
 rasterize.expand = False
 
+RGB_BANDS = ["red", "green", "blue"]
 OSM_TILES = hv.element.tiles.OSM()
 
-def plot_true_color_image(raw_data, time_event, mask_cl, range):
-    """
-    A function that plots the True Color band combination.
-    """
 
+def plot_rgb(raw_data, time_event, clip_range, mask_cl):
     def hook(plot, element):
         """
         Custom hook for disabling x/y tick lines/labels
@@ -36,12 +32,18 @@ def plot_true_color_image(raw_data, time_event, mask_cl, range):
                 tool.zoom_on_axis = False
                 break
 
-    # # RGB data
-    rgb_data = raw_data.sel(time=time_event, method="nearest")#.sel(band=rgb_bands)
+    rgb_data = raw_data.sel(time=time_event, method="nearest")
+    rgb_data = rgb_data.sel(band=RGB_BANDS)
+
+    # Convert to reflectance
+    rgb_data = s2_dn_to_reflectance(rgb_data)
+
+    # # Contrast stretching
+    rgb_data = s2_contrast_stretch(rgb_data, clip_range)
 
     # Mask the clouds
-    if mask_cl:
-        cl_data = rgb_data.sel(band=["scl"])
+    # if mask_cl:
+    #     cl_data = rgb_data.sel(band=["scl"])
 
     # # TODO: Clean up try/ (bare) except
     # if mask_cl:
@@ -58,12 +60,6 @@ def plot_true_color_image(raw_data, time_event, mask_cl, range):
 
     #     rgb_data = mask_clouds(rgb_data, cl_data)
 
-    # # Convert to reflectance
-    # rgb_data = s2_dn_to_reflectance(rgb_data)
-
-    # # Contrast stretching
-    rgb_data = s2_contrast_stretch(rgb_data, range)
-
     rgb_plot = rgb_data.hvplot.rgb(
         title="",
         x="x",
@@ -75,12 +71,11 @@ def plot_true_color_image(raw_data, time_event, mask_cl, range):
         xaxis=None,
         yaxis=None,
         hover=False
-        ).redim.nodata(z=0)  # nodata is displayed as black: https://github.com/holoviz/hvplot/issues/1091
-    print("finished plotting")
+        ).opts(hooks=[hook])
     return OSM_TILES * rgb_plot
 
 
-def plot_s2_spindex(items, time, s2_spindex, resolution, cmap, mask_cl):
+def plot_index(raw_data, time_event, collection, composite, mask_cl, cmap):
     """
     A function that plots the selected Sentinel-2 spectral index.
     """
@@ -103,51 +98,35 @@ def plot_s2_spindex(items, time, s2_spindex, resolution, cmap, mask_cl):
                 break
 
     # Get index information
-    s2_index = get_index_props(s2_spindex)
+    index_props = get_index_props(composite, collection)
 
     # Get the name of the selected spectral index
-    index_name = s2_index["short_name"]
+    index_name = index_props["short_name"]
 
     # Define a custom Hover tool for the image
     spindex_hover = HoverTool(
         tooltips=[(f"{index_name}", "@image")]
     )
 
-    print(f"loading data & generating {index_name} plot for {str(time)}")
-
-    # Get the selected image
-    sel_item = [it for it in items if it.datetime.date() == time]
+    print(f"loading data & generating {index_name} plot for {str(time_event)}")
 
     print("loading delayed data")
 
-    index_bands = s2_index["stac_bands"]
-    s2_data = stac_load(
-        sel_item,
-        bands=index_bands + ["scl"],
-        resolution=resolution,
-        chunks={'time': 1, 'x': 2048, 'y': 2048},
-        crs="EPSG:3857"
-        ).isel(time=0).to_array(dim="band")
+    index_bands = index_props["stac_bands"]
 
-    out_data = s2_data.sel(band=index_bands)
+    sel_data = raw_data.sel(time=time_event, method="nearest")
+    sel_data = sel_data.sel(band=index_bands)
 
     # Image DN to Reflectance
-    out_data = s2_dn_to_reflectance(out_data)
+    sel_data = s2_dn_to_reflectance(sel_data)
 
     # Get index parameters for spyndex
-    index_data = compute_index(out_data, s2_index)
+    index_data = compute_index(sel_data, index_props)
 
     # Mask the clouds
-    if mask_cl:
-        scl_data = s2_data.sel(band=["scl"])
-        index_data = mask_clouds(index_data, scl_data, False)
-
-    # Save the index to the cache?
-    pn.state.cache["index"] = {
-        "name": index_name,
-        "data": index_data,
-        "meta": s2_index
-        }
+    # if mask_cl:
+    #     scl_data = s2_data.sel(band=["scl"])
+    #     index_data = mask_clouds(index_data, scl_data, False)
 
     # Plot the computed spectral index
     index_plot = index_data.hvplot.image(
@@ -157,13 +136,13 @@ def plot_s2_spindex(items, time, s2_spindex, resolution, cmap, mask_cl):
         rasterize=True,
         colorbar=False,
         cmap=cmap,
-        cnorm="eq_hist",  # Temporary hack: some indices (e.g. SAVI2) have values outside the index range (-1, +1)
+        cnorm="eq_hist",
         frame_width=500,
         frame_height=500,
         xaxis=None,
         yaxis=None,
         tools=[spindex_hover],
-        ).redim.nodata(value=0)
+        ).opts(hooks=[hook])
 
     print("finished plotting")
-    return OSM_TILES * index_plot
+    return OSM_TILES * index_plot.redim.nodata(value=0)
