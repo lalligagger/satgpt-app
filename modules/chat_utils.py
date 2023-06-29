@@ -149,8 +149,13 @@ class MapManager(param.Parameterized):
 
         if self.collection == 'sentinel-2-l2a':
             data = s2_dn_to_reflectance(raw_data)
+            # if self.mask_clouds:
+                # mask the clouds
+
         if self.collection == 'landsat-c2-l2':
             data = landsat_dn_to_reflectance(raw_data)
+            # if self.mask_clouds:
+                # mask the clouds
         else:
             data = raw_data
 

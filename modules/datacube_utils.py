@@ -104,12 +104,6 @@ def get_index_pane(raw_data, time_event, collection, composite, cmap):
     # TODO: Move to _load_data()
     index_data = compute_index(sel_data, index_props)
 
-    # Mask the clouds
-    # TODO: Move to _load_data()
-    # if mask_cl:
-    #     scl_data = s2_data.sel(band=["scl"])
-    #     index_data = mask_clouds(index_data, scl_data, False)
-
     # Plot the computed spectral index
     index_plot = index_data.hvplot.image(
         title="",
