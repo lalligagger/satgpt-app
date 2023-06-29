@@ -176,15 +176,13 @@ class MapManager(param.Parameterized):
                 cmap_view.disabled = True
                 range_select.disabled = False
             else:
-                map_pane = get_index_pane(raw_data, time_event, collection, comp_index, cmap)
-                cmap_select.disabled = False
-                cmap_view.disabled = False
-                range_select.disabled = True
-
                 self.index = comp_index.strip('\"')
                 metadata = get_index_props(self.index, collection)
 
-                print(metadata)
+                map_pane = get_index_pane(raw_data, time_event, metadata, cmap)
+                cmap_select.disabled = False
+                cmap_view.disabled = False
+                range_select.disabled = True
 
             print("finished plotting")
 
@@ -236,7 +234,7 @@ class MapManager(param.Parameterized):
         viewer_bind = pn.bind(
             switch_layer,
             raw_data=self.data,
-            collection=self.collection, #TODO: Apply cmask, DN-> SR, on _load_data(), send indices
+            collection=self.collection, # TODO: remove from plot func, eventually
             comp_index=comp_index_select,
             time_event=time_select,
             clip_range=range_select,

@@ -56,7 +56,7 @@ def plot_rgb(raw_data, time_event, clip_range):
     return OSM_TILES * rgb_plot
 
 
-def get_index_pane(raw_data, time_event, collection, composite, cmap):
+def get_index_pane(raw_data, time_event, metadata, cmap):
     """
     A function that plots the selected Sentinel-2 spectral index.
     """
@@ -79,8 +79,7 @@ def get_index_pane(raw_data, time_event, collection, composite, cmap):
                 break
 
     # Get index information 
-    #TODO: Move to _load_data() ?
-    index_props = get_index_props(composite, collection)
+    index_props = metadata
 
     # Get the name of the selected spectral index
     index_name = index_props["short_name"]
@@ -101,7 +100,8 @@ def get_index_pane(raw_data, time_event, collection, composite, cmap):
     sel_data = sel_data.sel(band=index_bands)
 
     # Get index parameters for spyndex
-    # TODO: Move to _load_data()
+    # TODO: Could move to _load_data()/ .data if fast enough over whole daterange?
+    # Good for e.g. saving off a datacube with indices after viewing.
     index_data = compute_index(sel_data, index_props)
 
     # Plot the computed spectral index
@@ -122,7 +122,6 @@ def get_index_pane(raw_data, time_event, collection, composite, cmap):
 
     lyr_plot = OSM_TILES * index_plot.redim.nodata(value=0)
 
-    # TODO: Move under MapManager?
     meta_pane = get_index_metadata(index_props)
 
     kde_plot = plot_spindex_kde(index_name, index_data)
