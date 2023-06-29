@@ -166,12 +166,12 @@ class MapManager(param.Parameterized):
             """
 
             if comp_index == "RGB":
-                map_pane = plot_rgb(raw_data, time_event, clip_range, mask_cl)
+                map_pane = plot_rgb(raw_data, time_event, clip_range)
                 cmap_select.disabled = True
                 cmap_view.disabled = True
                 range_select.disabled = False
             else:
-                map_pane = get_index_pane(raw_data, time_event, collection, comp_index, mask_cl, cmap)
+                map_pane = get_index_pane(raw_data, time_event, collection, comp_index, cmap)
                 cmap_select.disabled = False
                 cmap_view.disabled = False
                 range_select.disabled = True

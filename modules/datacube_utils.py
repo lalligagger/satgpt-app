@@ -16,7 +16,7 @@ RGB_BANDS = ["red", "green", "blue"]
 OSM_TILES = hv.element.tiles.OSM()
 
 
-def plot_rgb(raw_data, time_event, clip_range, mask_cl):
+def plot_rgb(raw_data, time_event, clip_range):
     def hook(plot, element):
         """
         Custom hook for disabling x/y tick lines/labels
@@ -34,30 +34,12 @@ def plot_rgb(raw_data, time_event, clip_range, mask_cl):
                 tool.zoom_on_axis = False
                 break
 
+    # TODO: Merge goes here if using
     rgb_data = raw_data.sel(time=time_event, method="nearest")
     rgb_data = rgb_data.sel(band=RGB_BANDS)
 
     # # Contrast stretching
     rgb_data = s2_contrast_stretch(rgb_data, clip_range)
-
-    # # TODO: Clean up try/ (bare) except, move to _load_data()
-    # Mask the clouds
-    # if mask_cl:
-    #     cl_data = rgb_data.sel(band=["scl"])
-
-    # if mask_cl:
-    #     try:
-    #         cl_data = rgb_data.sel(band=["scl"])
-    #     except:
-    #         qa_data = rgb_data.sel(band=["qa_pixel"])
-    #         # Make a bitmask---when we bitwise-and it with the data, it leaves just the 4 bits we care about
-    #         mask_bitfields = [1, 2, 3, 4]  # dilated cloud, cirrus, cloud, cloud shadow
-    #         bitmask = 0
-    #         for field in mask_bitfields:
-    #             bitmask |= 1 << field
-    #         cl_data = qa_data & bitmask
-
-    #     rgb_data = mask_clouds(rgb_data, cl_data)
 
     rgb_plot = rgb_data.hvplot.rgb(
         title="",
@@ -74,7 +56,7 @@ def plot_rgb(raw_data, time_event, clip_range, mask_cl):
     return OSM_TILES * rgb_plot
 
 
-def get_index_pane(raw_data, time_event, collection, composite, mask_cl, cmap):
+def get_index_pane(raw_data, time_event, collection, composite, cmap):
     """
     A function that plots the selected Sentinel-2 spectral index.
     """
@@ -114,6 +96,7 @@ def get_index_pane(raw_data, time_event, collection, composite, mask_cl, cmap):
 
     index_bands = index_props["stac_bands"]
 
+    # TODO: Merge goes here if using
     sel_data = raw_data.sel(time=time_event, method="nearest")
     sel_data = sel_data.sel(band=index_bands)
 

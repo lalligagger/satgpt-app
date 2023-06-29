@@ -57,6 +57,20 @@ def mask_clouds(to_mask_data, scl_data, is_rgb=True):
         to_mask_data.values = np.where((scl_values == 8) | (scl_values == 9), np.nan, to_mask_values)[0, :, :]
     return to_mask_data
 
+# Mask the clouds (Landsat)
+# if mask_cl:
+    # cl_data = rgb_data.sel(band=["scl"])
+
+    # qa_data = rgb_data.sel(band=["qa_pixel"])
+    # # Make a bitmask---when we bitwise-and it with the data, it leaves just the 4 bits we care about
+    # mask_bitfields = [1, 2, 3, 4]  # dilated cloud, cirrus, cloud, cloud shadow
+    # bitmask = 0
+    # for field in mask_bitfields:
+    #     bitmask |= 1 << field
+    # cl_data = qa_data & bitmask
+
+    # to_mask_data = mask_clouds(rgb_data, cl_data)
+
 def landsat_dn_to_reflectance(in_data):
     """
     A function that converts image DN to Reflectance (0, 1)
