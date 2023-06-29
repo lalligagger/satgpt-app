@@ -99,7 +99,8 @@ def get_index_pane(raw_data, time_event, collection, composite, mask_cl, cmap):
                 tool.zoom_on_axis = False
                 break
 
-    # Get index information
+    # Get index information 
+    #TODO: Move to _load_data() ?
     index_props = get_index_props(composite, collection)
 
     # Get the name of the selected spectral index
@@ -119,13 +120,16 @@ def get_index_pane(raw_data, time_event, collection, composite, mask_cl, cmap):
     sel_data = raw_data.sel(time=time_event, method="nearest")
     sel_data = sel_data.sel(band=index_bands)
 
-    # Image DN to Reflectance
+    # Image DN to Reflectance 
+    # TODO: Move to _load_data()
     sel_data = s2_dn_to_reflectance(sel_data)
 
     # Get index parameters for spyndex
+    # TODO: Move to _load_data()
     index_data = compute_index(sel_data, index_props)
 
     # Mask the clouds
+    # TODO: Move to _load_data()
     # if mask_cl:
     #     scl_data = s2_data.sel(band=["scl"])
     #     index_data = mask_clouds(index_data, scl_data, False)
@@ -148,6 +152,7 @@ def get_index_pane(raw_data, time_event, collection, composite, mask_cl, cmap):
 
     lyr_plot = OSM_TILES * index_plot.redim.nodata(value=0)
 
+    # TODO: Move under MapManager?
     meta_pane = get_index_metadata(index_props)
 
     kde_plot = plot_spindex_kde(index_name, index_data)

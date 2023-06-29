@@ -146,6 +146,8 @@ class MapManager(param.Parameterized):
             crs="EPSG:3857"
             ).to_array(dim="band")
 
+        # TODO: generate spyndex metadata here (spyndex_utils.get_index_metadata)
+
         self.data = raw_data
 
     def _viewer(self):
@@ -206,13 +208,13 @@ class MapManager(param.Parameterized):
         # initializes the data
         self._load_data(
             time=time_date[0],
-            resolution=250,
+            resolution=None,
         )
 
         s2_true_color_bind = pn.bind(
             switch_layer,
             raw_data=self.data,
-            collection=self.collection,
+            collection=self.collection, #TODO: Apply cmask, DN-> SR, on _load_data(), send indices
             comp_index=comp_index_select,
             time_event=time_select,
             clip_range=range_select,
