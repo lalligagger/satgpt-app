@@ -9,8 +9,7 @@ from odc.stac import stac_load
 import geopandas as gpd
 import pystac
 from langchain.tools import StructuredTool
-from modules.spyndex_utils import BAND_MAPPING
-from modules.spyndex_utils import get_indices
+from modules.spyndex_utils import BAND_MAPPING, get_indices, get_index_props
 from modules.datacube_utils import plot_rgb, get_index_pane
 from modules.cmap_utils import get_cmap_options, get_cmap_plot
 from modules.image_processing import s2_dn_to_reflectance, landsat_dn_to_reflectance
@@ -41,9 +40,9 @@ class MapManager(param.Parameterized):
     # clip_range = param.Range((5,95))
     # cmap =  # (if not RGB)
 
-    ## Split view
+    ## Index view
     # split = True
-    # split_band = 'NDVI'
+    index = 'NDVI' # TODO: could make this a param Selector
 
     ## Resampling
     # max_resolution =
@@ -156,6 +155,7 @@ class MapManager(param.Parameterized):
             data = landsat_dn_to_reflectance(raw_data)
             # if self.mask_clouds:
                 # mask the clouds
+
         else:
             data = raw_data
 
@@ -180,7 +180,16 @@ class MapManager(param.Parameterized):
                 cmap_select.disabled = False
                 cmap_view.disabled = False
                 range_select.disabled = True
+
+                self.index = comp_index.strip('\"')
+                metadata = get_index_props(self.index, collection)
+
+                print(metadata)
+
             print("finished plotting")
+
+            # load metadata
+
             return map_pane
 
         items = pystac.ItemCollection(self.items_dict["features"])
@@ -224,7 +233,7 @@ class MapManager(param.Parameterized):
             resolution=None,
         )
 
-        s2_true_color_bind = pn.bind(
+        viewer_bind = pn.bind(
             switch_layer,
             raw_data=self.data,
             collection=self.collection, #TODO: Apply cmask, DN-> SR, on _load_data(), send indices
@@ -245,7 +254,7 @@ class MapManager(param.Parameterized):
             cmap_view,
             )
 
-        return pn.Row(wbox, s2_true_color_bind)
+        return pn.Row(wbox, viewer_bind)
 
 
 map_mgr = MapManager()
