@@ -1,5 +1,7 @@
+import datetime
 import holoviews as hv
 import panel as pn
+import numpy as np
 from bokeh.models import HoverTool, WheelZoomTool
 import hvplot.xarray  # noqa
 from rasterio.session import AWSSession
@@ -35,6 +37,7 @@ def plot_rgb(raw_data, time_event, clip_range):
                 break
 
     # TODO: Merge goes here if using
+    
     rgb_data = raw_data.sel(time=time_event, method="nearest")
     rgb_data = rgb_data.sel(band=RGB_BANDS)
 
@@ -56,7 +59,7 @@ def plot_rgb(raw_data, time_event, clip_range):
     return OSM_TILES * rgb_plot
 
 
-def get_index_pane(raw_data, time_event, metadata, cmap):
+def get_index_pane(raw_data, time_event, clip_range, metadata, cmap):
     """
     A function that plots the selected Sentinel-2 spectral index.
     """
@@ -95,14 +98,29 @@ def get_index_pane(raw_data, time_event, metadata, cmap):
 
     index_bands = index_props["stac_bands"]
 
-    # TODO: Merge goes here if using
     sel_data = raw_data.sel(time=time_event, method="nearest")
+
+    # # TODO: Merge goes here if using
+    # start_date = datetime.datetime.strptime(time_event, "%m/%d/%y")
+    # end_date = date_1 + datetime.timedelta(days=10)
+    # sel_data = raw_data.sel(time=slice(start_date,end_date))
+
+    # # spatial merge
+    # sel_data = merge_arrays(
+    #     dataarrays=[sel_data.sel(time=d).transpose('band', 'y', 'x') for d in sel_data.coords['time'].values]
+    #     )
+
     sel_data = sel_data.sel(band=index_bands)
 
     # Get index parameters for spyndex
     # TODO: Could move to _load_data()/ .data if fast enough over whole daterange?
     # Good for e.g. saving off a datacube with indices after viewing.
     index_data = compute_index(sel_data, index_props)
+
+    pct_min = index_data.quantile(clip_range[1]/100)
+    pct_max = index_data.quantile(clip_range[0]/100)
+    index_data = index_data.where(index_data < pct_min, np.nan)
+    index_data = index_data.where(index_data > pct_max, np.nan)
 
     # Plot the computed spectral index
     index_plot = index_data.hvplot.image(

@@ -159,8 +159,6 @@ class MapManager(param.Parameterized):
         else:
             data = raw_data
 
-        # TODO: generate spyndex metadata here (spyndex_utils.get_index_metadata)
-
         self.data = data
 
     def _viewer(self):
@@ -179,7 +177,7 @@ class MapManager(param.Parameterized):
                 self.index = comp_index.strip('\"')
                 metadata = get_index_props(self.index, collection)
 
-                map_pane = get_index_pane(raw_data, time_event, metadata, cmap)
+                map_pane = get_index_pane(raw_data, time_event, clip_range, metadata, cmap)
                 cmap_select.disabled = False
                 cmap_view.disabled = False
                 range_select.disabled = True
@@ -211,8 +209,9 @@ class MapManager(param.Parameterized):
         comp_index = {"Composites": ["RGB"], "Indices": get_indices(self.collection)}
         comp_index_select = pn.widgets.Select(name="Composites/Indices", groups=comp_index, value="RGB")
 
+        # TODO: Attach to map_mgr.clip_range, could update when switching to index based on min/ max values
         range_select = pn.widgets.EditableRangeSlider(
-            name='Image enhancement',
+            name='Clip percentiles (%)',
             start=1, end=100,
             value=(2.5, 97.5),
             step=0.5
