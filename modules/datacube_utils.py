@@ -38,7 +38,7 @@ def plot_rgb(raw_data, time_event, clip_range, mask_cl):
     rgb_data = rgb_data.sel(band=RGB_BANDS)
 
     # Convert to reflectance
-    rgb_data = s2_dn_to_reflectance(rgb_data)
+    # rgb_data = s2_dn_to_reflectance(rgb_data)
 
     # # Contrast stretching
     rgb_data = s2_contrast_stretch(rgb_data, clip_range)
@@ -122,7 +122,7 @@ def get_index_pane(raw_data, time_event, collection, composite, mask_cl, cmap):
 
     # Image DN to Reflectance 
     # TODO: Move to _load_data()
-    sel_data = s2_dn_to_reflectance(sel_data)
+    # sel_data = s2_dn_to_reflectance(sel_data)
 
     # Get index parameters for spyndex
     # TODO: Move to _load_data()

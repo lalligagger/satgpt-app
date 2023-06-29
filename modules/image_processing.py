@@ -56,3 +56,14 @@ def mask_clouds(to_mask_data, scl_data, is_rgb=True):
     else:
         to_mask_data.values = np.where((scl_values == 8) | (scl_values == 9), np.nan, to_mask_values)[0, :, :]
     return to_mask_data
+
+def landsat_dn_to_reflectance(in_data):
+    """
+    A function that converts image DN to Reflectance (0, 1)
+    https://www.usgs.gov/faqs/how-do-i-use-a-scale-factor-landsat-level-2-science-products
+    """
+
+    in_data.values = (in_data * 0.0000275) - 0.2
+    in_data.values = in_data.clip(0.0, 1.0)
+
+    return in_data

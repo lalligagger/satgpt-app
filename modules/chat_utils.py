@@ -13,6 +13,7 @@ from modules.spyndex_utils import BAND_MAPPING
 from modules.spyndex_utils import get_indices
 from modules.datacube_utils import plot_rgb, get_index_pane
 from modules.cmap_utils import get_cmap_options, get_cmap_plot
+from modules.image_processing import s2_dn_to_reflectance, landsat_dn_to_reflectance
 
 class MapManager(param.Parameterized):
     gdf = param.DataFrame(
@@ -146,9 +147,16 @@ class MapManager(param.Parameterized):
             crs="EPSG:3857"
             ).to_array(dim="band")
 
+        if self.collection == 'sentinel-2-l2a':
+            data = s2_dn_to_reflectance(raw_data)
+        if self.collection == 'landsat-c2-l2':
+            data = landsat_dn_to_reflectance(raw_data)
+        else:
+            data = raw_data
+
         # TODO: generate spyndex metadata here (spyndex_utils.get_index_metadata)
 
-        self.data = raw_data
+        self.data = data
 
     def _viewer(self):
         def switch_layer(raw_data, collection, comp_index, time_event, clip_range, mask_cl, cmap):
