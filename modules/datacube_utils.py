@@ -37,17 +37,14 @@ def plot_rgb(raw_data, time_event, clip_range, mask_cl):
     rgb_data = raw_data.sel(time=time_event, method="nearest")
     rgb_data = rgb_data.sel(band=RGB_BANDS)
 
-    # Convert to reflectance
-    # rgb_data = s2_dn_to_reflectance(rgb_data)
-
     # # Contrast stretching
     rgb_data = s2_contrast_stretch(rgb_data, clip_range)
 
+    # # TODO: Clean up try/ (bare) except, move to _load_data()
     # Mask the clouds
     # if mask_cl:
     #     cl_data = rgb_data.sel(band=["scl"])
 
-    # # TODO: Clean up try/ (bare) except
     # if mask_cl:
     #     try:
     #         cl_data = rgb_data.sel(band=["scl"])
@@ -119,10 +116,6 @@ def get_index_pane(raw_data, time_event, collection, composite, mask_cl, cmap):
 
     sel_data = raw_data.sel(time=time_event, method="nearest")
     sel_data = sel_data.sel(band=index_bands)
-
-    # Image DN to Reflectance 
-    # TODO: Move to _load_data()
-    # sel_data = s2_dn_to_reflectance(sel_data)
 
     # Get index parameters for spyndex
     # TODO: Move to _load_data()
