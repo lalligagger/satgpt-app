@@ -64,5 +64,5 @@ template = pn.template.FastListTemplate(
     logo="https://panel.holoviz.org/_static/logo_stacked.png",
     main=[component],
 )
-
-template.servable()
+pn.serve(template)
+# template.servable()
