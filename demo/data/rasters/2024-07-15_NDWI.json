@@ -1,0 +1,45 @@
+{
+ "date": "2024-07-15",
+ "kind": "index",
+ "index": "NDWI",
+ "long_name": "Normalized Difference Water Index",
+ "formula": "(G-N)/(G+N)",
+ "application_domain": "water",
+ "bands": [
+  "green",
+  "nir"
+ ],
+ "reference": "https://doi.org/10.1080/01431169608948714",
+ "width": 530,
+ "height": 551,
+ "nodata": 0,
+ "encoding": "8-bit; value = vmin + (png - 1) / 254 * (vmax - vmin); 0 = nodata",
+ "scale": {
+  "vmin": -0.8045161601901054,
+  "vmax": 0.9729730486869812
+ },
+ "percentiles": {
+  "p2": -0.7591040420532227,
+  "p98": 0.7730746364593496
+ },
+ "stats": {
+  "min": -0.858966588973999,
+  "max": 0.9942027926445007,
+  "mean": -0.04698767513036728,
+  "valid_fraction": 1.0
+ },
+ "crs": "EPSG:3857",
+ "bounds_3857": [
+  -13635000.0,
+  6024060.0,
+  -13603200.0,
+  6057120.0
+ ],
+ "bounds_lonlat": [
+  -122.48528898969674,
+  47.49992644831622,
+  -122.19962472934672,
+  47.70018226201438
+ ],
+ "resolution_m": 60.0
+}

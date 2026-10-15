@@ -1,0 +1,45 @@
+{
+ "date": "2024-07-10",
+ "kind": "index",
+ "index": "NBRSWIR",
+ "long_name": "Normalized Burn Ratio SWIR",
+ "formula": "(S2-S1-0.02)/(S2+S1+0.1)",
+ "application_domain": "burn",
+ "bands": [
+  "swir22",
+  "swir16"
+ ],
+ "reference": "https://doi.org/10.1080/22797254.2020.1738900",
+ "width": 530,
+ "height": 551,
+ "nodata": 0,
+ "encoding": "8-bit; value = vmin + (png - 1) / 254 * (vmax - vmin); 0 = nodata",
+ "scale": {
+  "vmin": -0.3397770629823208,
+  "vmax": -0.04079071741551207
+ },
+ "percentiles": {
+  "p2": -0.3212161481380463,
+  "p98": -0.06541609510779382
+ },
+ "stats": {
+  "min": -0.52398681640625,
+  "max": 0.30919456481933594,
+  "mean": -0.18544501066207886,
+  "valid_fraction": 1.0
+ },
+ "crs": "EPSG:3857",
+ "bounds_3857": [
+  -13635000.0,
+  6024060.0,
+  -13603200.0,
+  6057120.0
+ ],
+ "bounds_lonlat": [
+  -122.48528898969674,
+  47.49992644831622,
+  -122.19962472934672,
+  47.70018226201438
+ ],
+ "resolution_m": 60.0
+}

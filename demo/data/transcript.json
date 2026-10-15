@@ -1,0 +1,100 @@
+{
+ "recorded_at": "2026-10-15T22:01:26+00:00",
+ "mode": "no-llm",
+ "model": null,
+ "note": "Replies are canned: the tools were called directly, without an LLM.",
+ "tools": [
+  {
+   "name": "stac_search",
+   "description": "stac_search(west: float, south: float, east: float, north: float, dtime: str, collection: str = 'sentinel-2-l2a', url: Optional[str] = 'https://earth-search.aws.element84.com/v1/') -> str - Perform a STAC search for Sentinel (sentinel-2-l2a) or Landsat (landsat-c2-l2) L2 images.\n        The area of interest is a bounding box in WGS84 degrees: west (min longitude), south (min latitude),\n        east (max longitude), north (max latitude). dtime is an ISO date range like 2024-07-01/2024-07-31."
+  },
+  {
+   "name": "view_footprints",
+   "description": "view_footprints() - Load Sentinel & Landsat STAC item footprints to a map. Not for images. DO NOT use for Aqua/Terra/MODIS."
+  },
+  {
+   "name": "plot_metadata",
+   "description": "plot_metadata(field: str = 'eo:cloud_cover') - Plot any field from the current STAC items, e.g. cloud cover. No images, just STAC metadata fields."
+  },
+  {
+   "name": "show_datacube",
+   "description": "show_datacube() - Display the image viewer for the current items (images). Currently only supports RGB views, no spectral indices."
+  }
+ ],
+ "turns": [
+  {
+   "user": "Search for Sentinel-2 (sentinel-2-l2a) images over Seattle: bounding box west=-122.485, south=47.5, east=-122.2, north=47.7, for the date range 2024-07-01/2024-07-31.",
+   "tool_calls": [
+    {
+     "name": "stac_search",
+     "arguments": {
+      "west": -122.485,
+      "south": 47.5,
+      "east": -122.2,
+      "north": 47.7,
+      "dtime": "2024-07-01/2024-07-31",
+      "collection": "sentinel-2-l2a"
+     },
+     "result": "{'count': 12}",
+     "log": ""
+    }
+   ],
+   "assistant": "I found 12 Sentinel-2 L2A scenes over Seattle for July 2024.",
+   "media": null,
+   "seconds": 0.98
+  },
+  {
+   "user": "Show me the footprints of those scenes on a map.",
+   "tool_calls": [
+    {
+     "name": "view_footprints",
+     "arguments": {},
+     "result": "Map is loaded to chat. Return nothing but a text confirmation to let the user know.",
+     "log": ""
+    }
+   ],
+   "assistant": "The footprint map is loaded in the chat.",
+   "media": {
+    "kind": "footprint_map",
+    "python_type": "panel.pane.plot.Folium"
+   },
+   "seconds": 1.35
+  },
+  {
+   "user": "Plot the cloud cover (eo:cloud_cover) of those scenes over time.",
+   "tool_calls": [
+    {
+     "name": "plot_metadata",
+     "arguments": {
+      "field": "eo:cloud_cover"
+     },
+     "result": "Plot is loaded to chat. Return nothing other than 'Plotted!' to the user.",
+     "log": ""
+    }
+   ],
+   "assistant": "Plotted!",
+   "media": {
+    "kind": "plot",
+    "python_type": "panel.pane.holoviews.HoloViews"
+   },
+   "seconds": 0.07
+  },
+  {
+   "user": "Great, now show me the images.",
+   "tool_calls": [
+    {
+     "name": "show_datacube",
+     "arguments": {},
+     "result": "Images are loaded to chat. Return nothing other than 'Done!' to the user.",
+     "log": ""
+    }
+   ],
+   "assistant": "Done!",
+   "media": {
+    "kind": "datacube_viewer",
+    "python_type": "panel.layout.base.Row"
+   },
+   "seconds": 1.36
+  }
+ ]
+}
