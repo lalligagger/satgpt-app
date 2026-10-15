@@ -117,6 +117,9 @@ def get_index_pane(raw_data, time_event, clip_range, metadata, cmap):
     # Good for e.g. saving off a datacube with indices after viewing.
     index_data = compute_index(sel_data, index_props)
 
+    # xarray.quantile needs a single dask chunk per reduced dim; the loader chunks x/y at 2048 px.
+    # One date of one index for the bbox is small, so bring it into memory like the RGB path does.
+    index_data = index_data.load()
     pct_min = index_data.quantile(clip_range[1]/100)
     pct_max = index_data.quantile(clip_range[0]/100)
     index_data = index_data.where(index_data < pct_min, np.nan)

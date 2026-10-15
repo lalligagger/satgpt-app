@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import holoviews as hv
 import hvplot.xarray
@@ -51,14 +52,20 @@ class MapManager(param.Parameterized):
 
     def stac_search(
         self,
-        bbox: str,
+        west: float,
+        south: float,
+        east: float,
+        north: float,
         dtime: str,
         collection: str = "sentinel-2-l2a",
         url: Optional[str] = "https://earth-search.aws.element84.com/v1/",
     ) -> str:
-        """Perform a STAC search for Sentinel (sentinel-2-l2a) or Landsat (landsat-c2-l2) L2 images."""
+        """Perform a STAC search for Sentinel (sentinel-2-l2a) or Landsat (landsat-c2-l2) L2 images.
+        The area of interest is a bounding box in WGS84 degrees: west (min longitude), south (min latitude),
+        east (max longitude), north (max latitude). dtime is an ISO date range like 2024-07-01/2024-07-31."""
 
-        self.bbox = bbox  # TODO: change to tuple?
+        bbox = [float(west), float(south), float(east), float(north)]
+        self.bbox = ",".join(str(v) for v in bbox)  # _load_data splits this string
         self.collection = collection
 
         client = Client.open(url)
@@ -124,6 +131,15 @@ class MapManager(param.Parameterized):
 
     def show_datacube(self):
         """Display the image viewer for the current items (images). Currently only supports RGB views, no spectral indices."""
+
+        if self.collection == "landsat-c2-l2" and os.environ.get("AWS_REQUEST_PAYER") != "requester":
+            # Landsat Collection 2 lives in the requester-pays usgs-landsat bucket; without AWS credentials and
+            # AWS_REQUEST_PAYER=requester every read is refused. Sentinel-2 (sentinel-cogs) is public.
+            return (
+                "Landsat imagery can't be loaded on this server: the usgs-landsat bucket is requester-pays and "
+                "AWS_REQUEST_PAYER is not set. Tell the user to search Sentinel-2 (sentinel-2-l2a) instead, "
+                "or to restart the server with AWS credentials and AWS_REQUEST_PAYER=requester."
+            )
 
         rgb = self._viewer()
         self.media = pn.panel(rgb)
@@ -254,20 +270,28 @@ class MapManager(param.Parameterized):
         return pn.Row(wbox, viewer_bind)
 
 
-map_mgr = MapManager()
+def make_tools() -> tuple[MapManager, list[StructuredTool]]:
+    """Build a fresh MapManager and the LangChain tools bound to *that* instance.
 
-# define tools
-# tools == a wrapped method above
-search_tool = StructuredTool.from_function(map_mgr.stac_search)
-gribs_tool = StructuredTool.from_function(map_mgr.set_basemap)
-datacube_tool = StructuredTool.from_function(map_mgr.show_datacube)
-plot_tool = StructuredTool.from_function(map_mgr.plot_metadata)
-map_tool = StructuredTool.from_function(map_mgr.view_footprints)
+    Call this once per Panel session. A module-level MapManager would be
+    created once per server process and shared by every browser session,
+    so all visitors would see the same STAC search, footprint map and
+    datacube; the factory keeps search state private to each session.
+    """
+    map_mgr = MapManager()
 
-tools = [
-    search_tool,
-    map_tool,
-    # gribs_tool, # not working yet
-    plot_tool,
-    datacube_tool,
-]
+    # tools == a wrapped method of this instance
+    search_tool = StructuredTool.from_function(map_mgr.stac_search)
+    gribs_tool = StructuredTool.from_function(map_mgr.set_basemap)
+    datacube_tool = StructuredTool.from_function(map_mgr.show_datacube)
+    plot_tool = StructuredTool.from_function(map_mgr.plot_metadata)
+    map_tool = StructuredTool.from_function(map_mgr.view_footprints)
+
+    tools = [
+        search_tool,
+        map_tool,
+        # gribs_tool, # not working yet
+        plot_tool,
+        datacube_tool,
+    ]
+    return map_mgr, tools
