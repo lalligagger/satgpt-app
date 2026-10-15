@@ -1,0 +1,561 @@
+{
+ "recorded_at": "2026-10-15T22:01:26+00:00",
+ "mode": "no-llm",
+ "model": null,
+ "collection": "sentinel-2-l2a",
+ "stac_url": "https://earth-search.aws.element84.com/v1/",
+ "bbox": [
+  -122.485,
+  47.5,
+  -122.2,
+  47.7
+ ],
+ "datetime": "2024-07-01/2024-07-31",
+ "items": [
+  {
+   "id": "S2B_10TET_20240703_0_L2A",
+   "date": "2024-07-03",
+   "datetime": "2024-07-03T19:21:26.890000Z",
+   "eo:cloud_cover": 15.548883,
+   "s2:nodata_pixel_percentage": 1.2563,
+   "platform": "sentinel-2b",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 0.04525904872787043
+  },
+  {
+   "id": "S2A_10TET_20240705_0_L2A",
+   "date": "2024-07-05",
+   "datetime": "2024-07-05T19:11:30.305000Z",
+   "eo:cloud_cover": 0.003076,
+   "s2:nodata_pixel_percentage": 3.683936,
+   "platform": "sentinel-2a",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 9.245625449440126e-05
+  },
+  {
+   "id": "S2A_10TET_20240708_0_L2A",
+   "date": "2024-07-08",
+   "datetime": "2024-07-08T19:21:26.539000Z",
+   "eo:cloud_cover": 0.001423,
+   "s2:nodata_pixel_percentage": 1.142548,
+   "platform": "sentinel-2a",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 6.16375029962675e-05
+  },
+  {
+   "id": "S2B_10TET_20240710_0_L2A",
+   "date": "2024-07-10",
+   "datetime": "2024-07-10T19:11:28.812000Z",
+   "eo:cloud_cover": 0.002056,
+   "s2:nodata_pixel_percentage": 3.963215,
+   "platform": "sentinel-2b",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 9.930486593843098e-05
+  },
+  {
+   "id": "S2B_10TET_20240713_0_L2A",
+   "date": "2024-07-13",
+   "datetime": "2024-07-13T19:21:25.675000Z",
+   "eo:cloud_cover": 0.000379,
+   "s2:nodata_pixel_percentage": 1.157159,
+   "platform": "sentinel-2b",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 5.478889155223778e-05
+  },
+  {
+   "id": "S2A_10TET_20240715_0_L2A",
+   "date": "2024-07-15",
+   "datetime": "2024-07-15T19:11:28.372000Z",
+   "eo:cloud_cover": 15.517455,
+   "s2:nodata_pixel_percentage": 3.984874,
+   "platform": "sentinel-2a",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 0.15403896859911653
+  },
+  {
+   "id": "S2A_10TET_20240718_0_L2A",
+   "date": "2024-07-18",
+   "datetime": "2024-07-18T19:21:23.661000Z",
+   "eo:cloud_cover": 0.137877,
+   "s2:nodata_pixel_percentage": 0.910322,
+   "platform": "sentinel-2a",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 5.136458583022292e-05
+  },
+  {
+   "id": "S2B_10TET_20240720_0_L2A",
+   "date": "2024-07-20",
+   "datetime": "2024-07-20T19:11:30.226000Z",
+   "eo:cloud_cover": 0.012919,
+   "s2:nodata_pixel_percentage": 3.771228,
+   "platform": "sentinel-2b",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 5.478889155223778e-05
+  },
+  {
+   "id": "S2B_10TET_20240723_0_L2A",
+   "date": "2024-07-23",
+   "datetime": "2024-07-23T19:21:26.387000Z",
+   "eo:cloud_cover": 4.229707,
+   "s2:nodata_pixel_percentage": 1.206506,
+   "platform": "sentinel-2b",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 0.006362360031503612
+  },
+  {
+   "id": "S2A_10TET_20240725_0_L2A",
+   "date": "2024-07-25",
+   "datetime": "2024-07-25T19:11:29.159000Z",
+   "eo:cloud_cover": 63.635767,
+   "s2:nodata_pixel_percentage": 3.80737,
+   "platform": "sentinel-2a",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 0.20418792589802418
+  },
+  {
+   "id": "S2A_10TET_20240728_0_L2A",
+   "date": "2024-07-28",
+   "datetime": "2024-07-28T19:21:25.850000Z",
+   "eo:cloud_cover": 84.417748,
+   "s2:nodata_pixel_percentage": 1.099665,
+   "platform": "sentinel-2a",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 0.9990446187035579
+  },
+  {
+   "id": "S2B_10TET_20240730_0_L2A",
+   "date": "2024-07-30",
+   "datetime": "2024-07-30T19:11:27.830000Z",
+   "eo:cloud_cover": 96.870828,
+   "s2:nodata_pixel_percentage": 4.114575,
+   "platform": "sentinel-2b",
+   "grid:code": "MGRS-10TET",
+   "scl_cloud_fraction_bbox": 0.9260486936273671
+  }
+ ],
+ "recorded_dates": [
+  "2024-07-08",
+  "2024-07-10",
+  "2024-07-13",
+  "2024-07-15"
+ ],
+ "indices": [
+  "NDVI",
+  "NDWI",
+  "NBRSWIR",
+  "NDBI",
+  "NDMI",
+  "NBR",
+  "MNDWI",
+  "EVI"
+ ],
+ "bands_loaded": [
+  "blue",
+  "green",
+  "nir",
+  "red",
+  "swir16",
+  "swir22"
+ ],
+ "export_resolution_m": 60.0,
+ "cloud_mask": {
+  "band": "scl",
+  "cloud_classes": [
+   8,
+   9
+  ],
+  "source": "modules.image_processing.mask_clouds (SCL 8 | 9)"
+ },
+ "rasters": [
+  {
+   "date": "2024-07-08",
+   "layer": "RGB",
+   "png": "rasters/2024-07-08_rgb.png",
+   "json": "rasters/2024-07-08_rgb.json",
+   "bytes": 607313,
+   "item_ids": [
+    "S2A_10TET_20240708_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-08",
+   "layer": "NDVI",
+   "png": "rasters/2024-07-08_NDVI.png",
+   "json": "rasters/2024-07-08_NDVI.json",
+   "bytes": 213956,
+   "item_ids": [
+    "S2A_10TET_20240708_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-08",
+   "layer": "NDWI",
+   "png": "rasters/2024-07-08_NDWI.png",
+   "json": "rasters/2024-07-08_NDWI.json",
+   "bytes": 205353,
+   "item_ids": [
+    "S2A_10TET_20240708_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-08",
+   "layer": "NBRSWIR",
+   "png": "rasters/2024-07-08_NBRSWIR.png",
+   "json": "rasters/2024-07-08_NBRSWIR.json",
+   "bytes": 222586,
+   "item_ids": [
+    "S2A_10TET_20240708_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-08",
+   "layer": "NDBI",
+   "png": "rasters/2024-07-08_NDBI.png",
+   "json": "rasters/2024-07-08_NDBI.json",
+   "bytes": 223722,
+   "item_ids": [
+    "S2A_10TET_20240708_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-08",
+   "layer": "NDMI",
+   "png": "rasters/2024-07-08_NDMI.png",
+   "json": "rasters/2024-07-08_NDMI.json",
+   "bytes": 223798,
+   "item_ids": [
+    "S2A_10TET_20240708_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-08",
+   "layer": "NBR",
+   "png": "rasters/2024-07-08_NBR.png",
+   "json": "rasters/2024-07-08_NBR.json",
+   "bytes": 234511,
+   "item_ids": [
+    "S2A_10TET_20240708_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-08",
+   "layer": "MNDWI",
+   "png": "rasters/2024-07-08_MNDWI.png",
+   "json": "rasters/2024-07-08_MNDWI.json",
+   "bytes": 197790,
+   "item_ids": [
+    "S2A_10TET_20240708_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-08",
+   "layer": "EVI",
+   "png": "rasters/2024-07-08_EVI.png",
+   "json": "rasters/2024-07-08_EVI.json",
+   "bytes": 183900,
+   "item_ids": [
+    "S2A_10TET_20240708_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-10",
+   "layer": "RGB",
+   "png": "rasters/2024-07-10_rgb.png",
+   "json": "rasters/2024-07-10_rgb.json",
+   "bytes": 536075,
+   "item_ids": [
+    "S2B_10TET_20240710_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-10",
+   "layer": "NDVI",
+   "png": "rasters/2024-07-10_NDVI.png",
+   "json": "rasters/2024-07-10_NDVI.json",
+   "bytes": 204544,
+   "item_ids": [
+    "S2B_10TET_20240710_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-10",
+   "layer": "NDWI",
+   "png": "rasters/2024-07-10_NDWI.png",
+   "json": "rasters/2024-07-10_NDWI.json",
+   "bytes": 195577,
+   "item_ids": [
+    "S2B_10TET_20240710_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-10",
+   "layer": "NBRSWIR",
+   "png": "rasters/2024-07-10_NBRSWIR.png",
+   "json": "rasters/2024-07-10_NBRSWIR.json",
+   "bytes": 217874,
+   "item_ids": [
+    "S2B_10TET_20240710_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-10",
+   "layer": "NDBI",
+   "png": "rasters/2024-07-10_NDBI.png",
+   "json": "rasters/2024-07-10_NDBI.json",
+   "bytes": 204899,
+   "item_ids": [
+    "S2B_10TET_20240710_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-10",
+   "layer": "NDMI",
+   "png": "rasters/2024-07-10_NDMI.png",
+   "json": "rasters/2024-07-10_NDMI.json",
+   "bytes": 205333,
+   "item_ids": [
+    "S2B_10TET_20240710_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-10",
+   "layer": "NBR",
+   "png": "rasters/2024-07-10_NBR.png",
+   "json": "rasters/2024-07-10_NBR.json",
+   "bytes": 216504,
+   "item_ids": [
+    "S2B_10TET_20240710_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-10",
+   "layer": "MNDWI",
+   "png": "rasters/2024-07-10_MNDWI.png",
+   "json": "rasters/2024-07-10_MNDWI.json",
+   "bytes": 196629,
+   "item_ids": [
+    "S2B_10TET_20240710_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-10",
+   "layer": "EVI",
+   "png": "rasters/2024-07-10_EVI.png",
+   "json": "rasters/2024-07-10_EVI.json",
+   "bytes": 168187,
+   "item_ids": [
+    "S2B_10TET_20240710_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-13",
+   "layer": "RGB",
+   "png": "rasters/2024-07-13_rgb.png",
+   "json": "rasters/2024-07-13_rgb.json",
+   "bytes": 611321,
+   "item_ids": [
+    "S2B_10TET_20240713_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-13",
+   "layer": "NDVI",
+   "png": "rasters/2024-07-13_NDVI.png",
+   "json": "rasters/2024-07-13_NDVI.json",
+   "bytes": 214554,
+   "item_ids": [
+    "S2B_10TET_20240713_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-13",
+   "layer": "NDWI",
+   "png": "rasters/2024-07-13_NDWI.png",
+   "json": "rasters/2024-07-13_NDWI.json",
+   "bytes": 205081,
+   "item_ids": [
+    "S2B_10TET_20240713_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-13",
+   "layer": "NBRSWIR",
+   "png": "rasters/2024-07-13_NBRSWIR.png",
+   "json": "rasters/2024-07-13_NBRSWIR.json",
+   "bytes": 221609,
+   "item_ids": [
+    "S2B_10TET_20240713_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-13",
+   "layer": "NDBI",
+   "png": "rasters/2024-07-13_NDBI.png",
+   "json": "rasters/2024-07-13_NDBI.json",
+   "bytes": 227833,
+   "item_ids": [
+    "S2B_10TET_20240713_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-13",
+   "layer": "NDMI",
+   "png": "rasters/2024-07-13_NDMI.png",
+   "json": "rasters/2024-07-13_NDMI.json",
+   "bytes": 228040,
+   "item_ids": [
+    "S2B_10TET_20240713_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-13",
+   "layer": "NBR",
+   "png": "rasters/2024-07-13_NBR.png",
+   "json": "rasters/2024-07-13_NBR.json",
+   "bytes": 233516,
+   "item_ids": [
+    "S2B_10TET_20240713_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-13",
+   "layer": "MNDWI",
+   "png": "rasters/2024-07-13_MNDWI.png",
+   "json": "rasters/2024-07-13_MNDWI.json",
+   "bytes": 195870,
+   "item_ids": [
+    "S2B_10TET_20240713_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-13",
+   "layer": "EVI",
+   "png": "rasters/2024-07-13_EVI.png",
+   "json": "rasters/2024-07-13_EVI.json",
+   "bytes": 182727,
+   "item_ids": [
+    "S2B_10TET_20240713_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-15",
+   "layer": "RGB",
+   "png": "rasters/2024-07-15_rgb.png",
+   "json": "rasters/2024-07-15_rgb.json",
+   "bytes": 559323,
+   "item_ids": [
+    "S2A_10TET_20240715_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-15",
+   "layer": "NDVI",
+   "png": "rasters/2024-07-15_NDVI.png",
+   "json": "rasters/2024-07-15_NDVI.json",
+   "bytes": 190101,
+   "item_ids": [
+    "S2A_10TET_20240715_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-15",
+   "layer": "NDWI",
+   "png": "rasters/2024-07-15_NDWI.png",
+   "json": "rasters/2024-07-15_NDWI.json",
+   "bytes": 184947,
+   "item_ids": [
+    "S2A_10TET_20240715_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-15",
+   "layer": "NBRSWIR",
+   "png": "rasters/2024-07-15_NBRSWIR.png",
+   "json": "rasters/2024-07-15_NBRSWIR.json",
+   "bytes": 210904,
+   "item_ids": [
+    "S2A_10TET_20240715_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-15",
+   "layer": "NDBI",
+   "png": "rasters/2024-07-15_NDBI.png",
+   "json": "rasters/2024-07-15_NDBI.json",
+   "bytes": 196349,
+   "item_ids": [
+    "S2A_10TET_20240715_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-15",
+   "layer": "NDMI",
+   "png": "rasters/2024-07-15_NDMI.png",
+   "json": "rasters/2024-07-15_NDMI.json",
+   "bytes": 196636,
+   "item_ids": [
+    "S2A_10TET_20240715_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-15",
+   "layer": "NBR",
+   "png": "rasters/2024-07-15_NBR.png",
+   "json": "rasters/2024-07-15_NBR.json",
+   "bytes": 204191,
+   "item_ids": [
+    "S2A_10TET_20240715_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-15",
+   "layer": "MNDWI",
+   "png": "rasters/2024-07-15_MNDWI.png",
+   "json": "rasters/2024-07-15_MNDWI.json",
+   "bytes": 191099,
+   "item_ids": [
+    "S2A_10TET_20240715_0_L2A"
+   ]
+  },
+  {
+   "date": "2024-07-15",
+   "layer": "EVI",
+   "png": "rasters/2024-07-15_EVI.png",
+   "json": "rasters/2024-07-15_EVI.json",
+   "bytes": 182894,
+   "item_ids": [
+    "S2A_10TET_20240715_0_L2A"
+   ]
+  }
+ ],
+ "masks": [
+  {
+   "date": "2024-07-08",
+   "png": "rasters/2024-07-08_scl.png",
+   "json": "rasters/2024-07-08_scl.json",
+   "bytes": 32106,
+   "cloud_fraction": 6.16375029962675e-05
+  },
+  {
+   "date": "2024-07-10",
+   "png": "rasters/2024-07-10_scl.png",
+   "json": "rasters/2024-07-10_scl.json",
+   "bytes": 30889,
+   "cloud_fraction": 9.930486593843098e-05
+  },
+  {
+   "date": "2024-07-13",
+   "png": "rasters/2024-07-13_scl.png",
+   "json": "rasters/2024-07-13_scl.json",
+   "bytes": 30395,
+   "cloud_fraction": 5.478889155223778e-05
+  },
+  {
+   "date": "2024-07-15",
+   "png": "rasters/2024-07-15_scl.png",
+   "json": "rasters/2024-07-15_scl.json",
+   "bytes": 35210,
+   "cloud_fraction": 0.15403896859911653
+  }
+ ]
+}

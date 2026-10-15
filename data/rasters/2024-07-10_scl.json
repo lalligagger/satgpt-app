@@ -1,0 +1,55 @@
+{
+ "date": "2024-07-10",
+ "kind": "scl",
+ "band": "scl",
+ "width": 530,
+ "height": 551,
+ "encoding": "8-bit; pixel value = SCL class (see classes); 0 = no data",
+ "classes": {
+  "0": "no data",
+  "1": "saturated or defective",
+  "2": "dark area pixels",
+  "3": "cloud shadows",
+  "4": "vegetation",
+  "5": "not vegetated",
+  "6": "water",
+  "7": "unclassified",
+  "8": "cloud medium probability",
+  "9": "cloud high probability",
+  "10": "thin cirrus",
+  "11": "snow"
+ },
+ "cloud_classes": [
+  8,
+  9
+ ],
+ "cloud_fraction": 9.930486593843098e-05,
+ "class_counts": {
+  "0": 0,
+  "1": 0,
+  "2": 734,
+  "3": 0,
+  "4": 81603,
+  "5": 66989,
+  "6": 141574,
+  "7": 1101,
+  "8": 29,
+  "9": 0,
+  "10": 0,
+  "11": 0
+ },
+ "crs": "EPSG:3857",
+ "bounds_3857": [
+  -13635000.0,
+  6024060.0,
+  -13603200.0,
+  6057120.0
+ ],
+ "bounds_lonlat": [
+  -122.48528898969674,
+  47.49992644831622,
+  -122.19962472934672,
+  47.70018226201438
+ ],
+ "resolution_m": 60.0
+}

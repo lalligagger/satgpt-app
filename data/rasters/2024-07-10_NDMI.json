@@ -1,0 +1,45 @@
+{
+ "date": "2024-07-10",
+ "kind": "index",
+ "index": "NDMI",
+ "long_name": "Normalized Difference Moisture Index",
+ "formula": "(N-S1)/(N+S1)",
+ "application_domain": "vegetation",
+ "bands": [
+  "nir",
+  "swir16"
+ ],
+ "reference": "https://doi.org/10.1016/S0034-4257(01)00318-2",
+ "width": 530,
+ "height": 551,
+ "nodata": 0,
+ "encoding": "8-bit; value = vmin + (png - 1) / 254 * (vmax - vmin); 0 = nodata",
+ "scale": {
+  "vmin": -0.9393938779830933,
+  "vmax": 0.7846153378486633
+ },
+ "percentiles": {
+  "p2": -0.8823530077934265,
+  "p98": 0.7454546093940735
+ },
+ "stats": {
+  "min": -0.9844961762428284,
+  "max": 0.9719298481941223,
+  "mean": 0.22189897298812866,
+  "valid_fraction": 1.0
+ },
+ "crs": "EPSG:3857",
+ "bounds_3857": [
+  -13635000.0,
+  6024060.0,
+  -13603200.0,
+  6057120.0
+ ],
+ "bounds_lonlat": [
+  -122.48528898969674,
+  47.49992644831622,
+  -122.19962472934672,
+  47.70018226201438
+ ],
+ "resolution_m": 60.0
+}

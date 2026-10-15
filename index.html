@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SatGPT demo replay</title>
+<meta name="description" content="A recorded conversation with SatGPT, replayed from static files: STAC search, footprints, cloud cover and a Sentinel-2 index viewer.">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+      integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">🛰</span>
+    <div>
+      <h1>SatGPT <span class="muted">· demo replay</span></h1>
+      <p class="tagline">A recorded conversation with the SatGPT agent (LangChain + Panel, 2023), replayed from static files.
+        Nothing runs on a server: no LLM, no keys, no STAC calls. The imagery is Sentinel-2 L2A over Seattle, July 2024.</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="mode-badge" class="badge" title="How this transcript was recorded"></span>
+    <a class="link" href="https://github.com/lalligagger/satgpt-app" rel="noopener">source ↗</a>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="chat-col" aria-label="Chat replay">
+    <div class="chat-head">
+      <strong>Chat</strong>
+      <span class="muted small" id="chat-status">press a prompt to start</span>
+    </div>
+    <div id="chat" class="chat" aria-live="polite"></div>
+    <form id="chat-form" class="chat-form" autocomplete="off">
+      <input id="chat-input" type="text" placeholder="Type a message… (this is a recorded demo)" aria-label="Message" maxlength="300">
+      <button id="chat-send" class="btn" type="submit">Send</button>
+    </form>
+    <div class="steps">
+      <div class="steps-head">
+        <strong>Next step</strong>
+        <span class="small muted">the recorded prompts, in order · or type your own above</span>
+        <span class="spacer"></span>
+        <button id="play-all" class="btn small-btn" type="button">Play all</button>
+        <button id="restart" class="btn small-btn ghost" type="button">Restart</button>
+      </div>
+      <ol id="steps" class="step-list"></ol>
+    </div>
+  </section>
+
+  <section class="map-col" aria-label="Map and imagery">
+    <div id="map" class="map" role="application" aria-label="Map"></div>
+
+    <div class="panel imagery" id="imagery-panel">
+      <div class="panel-head">
+        <strong>Imagery</strong>
+        <span id="imagery-hint" class="small muted">appears once the agent loads the images</span>
+      </div>
+      <div class="controls">
+        <label>Date
+          <select id="date-select"></select>
+        </label>
+        <label>Layer
+          <select id="layer-select"></select>
+        </label>
+        <label>Colormap
+          <select id="cmap-select"></select>
+        </label>
+        <label class="check"><input type="checkbox" id="cmap-reverse"> reverse</label>
+        <label class="check" title="Hide pixels the Sentinel-2 scene classification (SCL) calls cloud, classes 8 and 9, as the live app's mask_clouds does"><input type="checkbox" id="mask-clouds"> mask clouds</label>
+        <label>Opacity
+          <input type="range" id="opacity" min="0" max="1" step="0.05" value="1">
+        </label>
+      </div>
+      <div class="stretch">
+        <span class="small">Stretch (percentiles)</span>
+        <div class="stretch-row">
+          <input type="range" id="stretch-lo" min="0" max="50" step="0.5" value="2">
+          <input type="range" id="stretch-hi" min="50" max="100" step="0.5" value="98">
+          <span id="stretch-label" class="mono small">2 – 98 %</span>
+        </div>
+      </div>
+      <div class="legend">
+        <canvas id="legend-bar" width="256" height="12"></canvas>
+        <div class="legend-labels mono small"><span id="legend-min"></span><span id="legend-mid" class="muted"></span><span id="legend-max"></span></div>
+      </div>
+      <div id="layer-meta" class="meta small"></div>
+      <div id="cursor-readout" class="mono small muted">hover the map for a value</div>
+    </div>
+
+    <div class="panel chart" id="chart-panel">
+      <div class="panel-head">
+        <strong>Cloud cover by date</strong>
+        <span class="small muted">eo:cloud_cover per scene · filled dots are the recorded dates (click to select)</span>
+      </div>
+      <div id="chart"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot small muted">
+  Data: <a href="https://earth-search.aws.element84.com/v1/" rel="noopener">Element84 Earth Search v1</a>, Sentinel-2 L2A (Copernicus / ESA, via AWS open data).
+  Indices from <a href="https://github.com/awesome-spectral-indices/spyndex" rel="noopener">spyndex</a>.
+  Basemap © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a> contributors.
+  <span id="recorded-at"></span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+        integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="app.js"></script>
+</body>
+</html>
