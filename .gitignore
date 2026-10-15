@@ -160,3 +160,6 @@ cython_debug/
 #.idea/
 
 tests_/
+
+# Claude Code desktop launch config (per machine)
+.claude/

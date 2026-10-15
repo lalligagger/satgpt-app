@@ -1,41 +1,85 @@
-**Introduction**
+# SatGPT (app)
 
-This is a demo web app for `SatGPT`, an experimental project that uses large language models (LLMs) to retrieve and generate satellite data.
+**Live demo:** <https://kevinlalli.me/satgpt-app/> — a recorded SatGPT session you can replay and poke at
+(switch spectral index, date, colormap, stretch and cloud mask on real Sentinel-2 imagery). It is static:
+no server, no model, no keys. The chat answers canned replies.
+
+SatGPT is an experiment in using a large language model to retrieve and look at satellite imagery in
+natural language. This repo is the LangChain + Panel web app from mid-2023; the earlier shell-gpt CLI is at
+[lalligagger/satgpt](https://github.com/lalligagger/satgpt).
 
 https://github.com/lalligagger/satgpt-app/assets/11700267/8675bdc5-ca40-418e-98ce-724ec06ad05a
 
-So far, the app can help retrieve Sentinel 2 optical imagery based on the user's requested area and time of interest in natural language. It is built on the following:
+## What it does
 
-* [OpenAI ChatGPT API](https://openai.com/blog/openai-api) - You've probably tried the chat bot... if you haven't played with the API, you should!
-* [LangChain](https://python.langchain.com/en/latest/index.html) - LangChain provides abstractions and common tooling for many LLMs, including OpenAI; this project uses the recently released structured tools to facilitate API requests in natural language
-* [STAC](https://stacspec.org/en) & [Element84 EarthSearch v1](https://www.element84.com/blog/introducing-earth-search-v1-new-datasets-now-available) - The spatiotemporal asset catalogs (STAC) specification is a common way to describe geospatial information; Element84 has launched their version 1 EarthSearch catalog to make public satellite imagery more available and discoverable
-* [Holoviz Panel](https://panel.holoviz.org/) - A python-friendly app development package that works well with the greater Holoviz data & vizualization ecosystem
+Ask for imagery over a place and time, and the agent calls four tools in turn:
 
+1. `stac_search` — queries [Element84 Earth Search v1](https://earth-search.aws.element84.com/v1/) for
+   Sentinel-2 L2A (or Landsat Collection 2 L2) scenes over a bounding box and date range.
+2. `view_footprints` — draws the scene footprints on a map.
+3. `plot_metadata` — plots any STAC field over time, e.g. `eo:cloud_cover`.
+4. `show_datacube` — loads the scenes lazily with [odc-stac](https://github.com/opendatacube/odc-stac)
+   and opens a viewer: RGB or any [spyndex](https://github.com/awesome-spectral-indices/spyndex) index the
+   collection supports, date picker, percentile stretch, colormap, cloud mask.
 
-**Getting started**
+Built on the OpenAI chat API (function calling), [LangChain](https://python.langchain.com/) 0.0.x,
+[STAC](https://stacspec.org/) and [Panel](https://panel.holoviz.org/).
 
-1) Fork this repo
-    - From the repo site on GitHub, you'll want to create your own fork of this project
-2) Add API key(s)
-    - From your forked repo, go to "Settings" > "Secrets and variables" > "Codespaces"
-    - Add your OpenAI API key as a new repository secret
-    - Use `OPENAI_API_KEY` as the Name (`YOUR_SECRET_NAME`), and put the key in the Secret field
-3) Launch Codespaces
-    - Start a Codespace from the main page of your repo, using the "Code" dropdown and the "Codespaces" tab
-    - The Codespace will install all requirements, which will take a few minutes; once the environment is ready, you can launch the app
-    - Typically, a panel app is launched using `python -m panel serve app.py`; in Codespaces the port that the app runs on will be automatically forwarded, but we need to add one extra argument to allow the app to communicate with itself...
-    - The argument is `--allow-websocket-origin=...` and will be equal to one of two values depending on how you decided to run the Codespace:
-        - If you are running the Codespace remotely (in your browser), you'll want to note the subdomain that your Codespace launched to (everything ahead of the `github.dev` in your browser address bar), and add `-5006.preview.app.github.dev` to that; the full command will be:
-        
-        `python -m panel serve app.py --allow-websocket-origin=YOUR_SUBDOMAIN-5006.preview.app.github.dev`
-        - If you are running in VSCode desktop, you'll want to use localhost:
+## Status (2026-10)
 
-        `python -m panel serve app.py --allow-websocket-origin=127.0.0.1:5006`
+The code is from June 2023 and is kept runnable on its original library generation rather than ported.
+On 2026-10-15 it was revived on an Apple-silicon Mac, with these changes:
 
-Note: you only need to set this up once. All GitHub accounts now come with 60 CPU hours (30 hours on a 2-CPU instance) of Codespaces use per month. All git commands and authentication should "just work" for your fork, and files will be saved in between commits. It will likely remain the top-supported deployment for SatGPT, which will require the management of one or more individual API keys for users. Further instructions will be provided on how to keep your instance up to date without going through a full rebuild.
+- `requirements-2023-lock.txt` pins 2023 releases of everything (reconstructed; the original lockfile was
+  never committed). The loose `requirements.txt` no longer resolves on current PyPI.
+- The retired `gpt-3.5-turbo-0613` became the `SATGPT_MODEL` environment variable (default `gpt-4o-mini`;
+  any chat model with function calling works).
+- The search tool takes four numeric bounds (`west, south, east, north`) instead of one free-text bbox,
+  which newer models truncated.
+- State is per browser session (one agent, memory and map manager per tab) instead of process-global.
+- Tool and model errors are shown in the chat instead of crashing the callback.
+- Landsat imagery is refused with a clear message unless `AWS_REQUEST_PAYER=requester` is set, because
+  the `usgs-landsat` bucket is requester-pays. Sentinel-2 is public.
+- Spectral indices load into memory before the percentile stretch (xarray's `quantile` needs one chunk).
 
-**Looking ahead**
+Running it fully in the browser with Pyodide was explored and set aside: the imagery pipeline (dask,
+odc-stac, rasterio reading COGs) cannot run in WebAssembly. Hence the recorded demo below.
 
-SatGPT was [originally](https://github.com/lalligagger/satgpt) built on the OpenAI API without LangChain tools/ agents, using a single prompt and one or two custom CLI tools. It used [ShellGPT](https://github.com/TheR1D/shell_gpt) for automatic execution in a shell REPL and could generate STAC item searches as well as save TIFs or GIFs of the search.
+## Run it locally
 
-In the future, we would like to re-integrate all of that functionality into a future version of SatGPT built on LangChain and a library of tools specific to satellite image analysis and mission engineering. It'd also be nice to run on LLMs that don't rely sending data to external APIs, which will be possible with LangChain.
+Requirements: Python 3.11 (on Apple silicon the pins need an Intel build under Rosetta, because recent
+numba, llvmlite and cryptography dropped Intel macOS wheels and the 2023 pins predate arm64 wheels for some
+packages; a Linux x86_64 machine is simpler), an OpenAI API key.
+
+```bash
+python3.11 -m venv .venv
+.venv/bin/pip install -r requirements-2023-lock.txt
+export OPENAI_API_KEY=...        # never commit this
+./run_local.sh                   # http://localhost:5006/app, autoreloads on edits
+./run_local.sh --tunnel          # also prints a public https://*.trycloudflare.com URL
+```
+
+Then ask, in order: "Find Sentinel-2 images over Seattle from July 2024", "Show the footprints on a map",
+"Plot cloud cover", "Show the images". `SATGPT_MODEL` picks the model; `AWS_REQUEST_PAYER=requester` with
+AWS credentials enables Landsat imagery (you pay S3 egress).
+
+The original Codespaces instructions still apply in spirit (`panel serve app.py
+--allow-websocket-origin=<host>`), but the 2023 devcontainer is gone; use the venv above.
+
+## The recorded demo
+
+The live demo at <https://kevinlalli.me/satgpt-app/> is a static replay served from this repo's
+[`gh-pages` branch](https://github.com/lalligagger/satgpt-app/tree/gh-pages), kept off `main` so this
+branch stays the runnable app. That branch's `tools/record.py` runs one scripted conversation through
+this app (or `--no-llm` to call the tools directly) and exports the transcript, footprints, metadata and
+per-index rasters that the page replays; its README says how.
+
+## Layout
+
+| Path | What |
+|---|---|
+| `app.py` | Panel app: chat box, agent, per-session wiring |
+| `modules/chat_utils.py` | `MapManager` (the four tools) and the viewer |
+| `modules/datacube_utils.py`, `image_processing.py`, `spyndex_utils.py`, `cmap_utils.py` | imagery, indices, colormaps |
+| `requirements-2023-lock.txt` | the pins that work |
+| `run_local.sh` | serve locally, optional cloudflared quick tunnel |
